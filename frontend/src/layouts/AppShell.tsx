@@ -5,6 +5,7 @@ import { TopBar } from '@/components/common/TopBar';
 import { Navbar } from '@/components/common/Navbar';
 import { ToastContainer } from '@/components/ui/ToastContainer';
 import { CommandPalette } from '@/components/common/CommandPalette';
+import { OfflineIndicator } from '@/components/common/OfflineIndicator';
 import { useUIStore } from '@/store/uiStore';
 
 export const AppShell: React.FC = () => {
@@ -12,6 +13,9 @@ export const AppShell: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex">
+      {/* Offline Connectivity Banner */}
+      <OfflineIndicator />
+
       {/* Navigation Sidebar */}
       <Sidebar />
 

@@ -21,6 +21,10 @@ import {
   ChevronRight,
   ShieldCheck,
   X,
+  Layers,
+  Wrench,
+  Bell,
+  User,
 } from 'lucide-react';
 
 interface NavItem {
@@ -47,6 +51,7 @@ export const Sidebar: React.FC = () => {
       title: 'Command',
       items: [
         { name: t('nav.nationalDashboard'), path: '/', icon: LayoutDashboard },
+        { name: 'Regional Command', path: '/dashboard/regional', icon: Layers, badge: 'States' },
         { name: t('nav.resourceMap'), path: '/map', icon: Map, badge: 'Live GPS' },
       ],
     },
@@ -58,6 +63,7 @@ export const Sidebar: React.FC = () => {
         { name: t('nav.expiryTracking'), path: '/expiry', icon: Clock },
         { name: t('nav.bedAvailability'), path: '/beds', icon: Bed },
         { name: t('nav.workforce'), path: '/workforce', icon: Users },
+        { name: 'Biomed Equipment', path: '/equipment', icon: Wrench },
       ],
     },
     {
@@ -71,6 +77,12 @@ export const Sidebar: React.FC = () => {
           icon: AlertTriangle,
           alert: true,
         },
+        {
+          name: 'Alert Management',
+          path: '/alerts',
+          icon: Bell,
+          badge: 'Push',
+        },
       ],
     },
     {
@@ -82,7 +94,11 @@ export const Sidebar: React.FC = () => {
     },
     {
       title: 'System',
-      items: [{ name: t('nav.settings'), path: '/settings', icon: Settings }],
+      items: [
+        { name: 'Admin & RBAC', path: '/admin', icon: ShieldCheck, badge: 'F-104' },
+        { name: 'User Profile', path: '/profile', icon: User },
+        { name: t('nav.settings'), path: '/settings', icon: Settings },
+      ],
     },
   ];
 
