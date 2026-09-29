@@ -1,0 +1,47 @@
+{
+  "app": {
+    "name": "Sanjeevani Grid",
+    "subtitle": "Health Resource Intelligence Platform",
+    "nationalGrid": "National Health Grid",
+    "onlineStatus": "Network Mesh Online"
+  },
+  "nav": {
+    "dashboard": "Command Dashboard",
+    "nationalDashboard": "National Command",
+    "regionalDashboard": "State & District",
+    "resourceMap": "Resource Intelligence Map",
+    "facilities": "Facilities & Hospitals",
+    "inventory": "Live Inventory & Stock",
+    "expiryTracking": "Expiry Tracker",
+    "bedAvailability": "Bed Telemetry",
+    "workforce": "Workforce & Staff",
+    "patients": "Patient Footfall",
+    "diseaseTrends": "Disease Surveillance",
+    "emergencyCommand": "Emergency Command Mode",
+    "federatedAI": "Federated AI Network",
+    "analytics": "Resource Analytics",
+    "settings": "Settings & Security",
+    "search": "Quick Search (Ctrl + K)"
+  },
+  "roles": {
+    "national_officer": "National Officer",
+    "state_officer": "State Health Director",
+    "district_officer": "District Collector / CMO",
+    "facility_admin": "Hospital Administrator",
+    "logistics_coordinator": "Supply Chain Coordinator",
+    "doctor": "Chief Medical Officer"
+  },
+  "status": {
+    "resilienceScore": "Grid Resilience Score",
+    "activeNodes": "Active Mesh Nodes",
+    "criticalAlerts": "Critical Shortage Alerts",
+    "syncStatus": "Real-time Edge Sync Active"
+  },
+  "actions": {
+    "switchRole": "Switch Simulated Role",
+    "emergencyMode": "Toggle Emergency Mode",
+    "searchPlaceholder": "Search facilities, drugs, beds, hospitals...",
+    "close": "Close",
+    "retry": "Try Again"
+  }
+}

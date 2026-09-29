@@ -1,0 +1,47 @@
+{
+  "app": {
+    "name": "সঞ্জীবনী গ্রিড",
+    "subtitle": "স্বাস্থ্য সম্পদ বুদ্ধিমত্তা প্ল্যাটফর্ম",
+    "nationalGrid": "জাতীয় স্বাস্থ্য গ্রিড",
+    "onlineStatus": "নেটওয়ার্ক মেশ অনলাইন"
+  },
+  "nav": {
+    "dashboard": "কমান্ড ড্যাশবোর্ড",
+    "nationalDashboard": "জাতীয় কমান্ড",
+    "regionalDashboard": "রাজ্য ও জেলা",
+    "resourceMap": "সম্পদ গোয়েন্দা মানচিত্র",
+    "facilities": "হাসপাতাল ও স্বাস্থ্যকেন্দ্র",
+    "inventory": "লাইভ ইনভেন্টরি ও স্টক",
+    "expiryTracking": "মেয়াদোত্তীর্ণ ট্র্যাকার",
+    "bedAvailability": "বেড প্রাপ্যতা",
+    "workforce": "কর্মীবাহিনী ও কর্মী",
+    "patients": "রোগী আগমন প্রবাহ",
+    "diseaseTrends": "রোগ নজরদারি",
+    "emergencyCommand": "জরুরী কমান্ড মোড",
+    "federatedAI": "ফেডারেটেড এআই নেটওয়ার্ক",
+    "analytics": "সম্পদ বিশ্লেষণ",
+    "settings": "সেটিংস ও নিরাপত্তা",
+    "search": "দ্রুত অনুসন্ধান (Ctrl + K)"
+  },
+  "roles": {
+    "national_officer": "জাতীয় কর্মকর্তা",
+    "state_officer": "রাজ্য স্বাস্থ্য পরিচালক",
+    "district_officer": "জেলাশাসক / সিএমও",
+    "facility_admin": "হাসপাতাল প্রশাসক",
+    "logistics_coordinator": "সরবরাহ শৃঙ্খলা সমন্বয়কারী",
+    "doctor": "প্রধান চিকিৎসা কর্মকর্তা"
+  },
+  "status": {
+    "resilienceScore": "গ্রিড স্থিতিস্থাপকতা স্কোর",
+    "activeNodes": "সক্রিয় মেশ নোড",
+    "criticalAlerts": "জরুরী ঘাটতি সতর্কতা",
+    "syncStatus": "রিয়েল-টাইম এজ সিঙ্ক সক্রিয়"
+  },
+  "actions": {
+    "switchRole": "সিমুলেটেড ভূমিকা পরিবর্তন",
+    "emergencyMode": "জরুরী মোড চালু/বন্ধ",
+    "searchPlaceholder": "হাসপাতাল, ওষুধ, বেড খুঁজুন...",
+    "close": "বন্ধ করুন",
+    "retry": "পুনরায় চেষ্টা করুন"
+  }
+}

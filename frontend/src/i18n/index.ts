@@ -1,14 +1,13 @@
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
+import en from './locales/en.json';
+import hi from './locales/hi.json';
+import bn from './locales/bn.json';
 
 const resources = {
-  en: {
-    translation: {
-      title: 'Sanjeevani Grid',
-      subtitle: 'Health Resource Intelligence Platform',
-      status: 'Platform Initialized',
-    },
-  },
+  en: { translation: en },
+  hi: { translation: hi },
+  bn: { translation: bn },
 };
 
 i18n
