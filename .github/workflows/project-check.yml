@@ -1,0 +1,44 @@
+name: Project Integrity & Security Check
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  verify-structure:
+    name: Verify Project Monorepo Structure & Secrets Policy
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Check required root folders exist
+        run: |
+          echo "Verifying monorepo directories..."
+          for dir in frontend backend ai federated optimization infra docs scripts .github/workflows; do
+            if [ ! -d "$dir" ]; then
+              echo "Error: Required directory '$dir' is missing!"
+              exit 1
+            fi
+            echo "✓ $dir exists"
+          done
+
+      - name: Ensure .env is NOT tracked in git
+        run: |
+          if git ls-files --error-unmatch .env > /dev/null 2>&1; then
+            echo "SECURITY VIOLATION: .env file is tracked in git!"
+            exit 1
+          else
+            echo "✓ .env is properly ignored and not tracked."
+          fi
+
+      - name: Verify .env.example is present
+        run: |
+          if [ ! -f ".env.example" ]; then
+            echo "Error: .env.example is required for onboarding!"
+            exit 1
+          fi
+          echo "✓ .env.example is tracked and present."

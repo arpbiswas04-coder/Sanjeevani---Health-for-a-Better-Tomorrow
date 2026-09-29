@@ -1,0 +1,1 @@
+"""Federated tests package initialization."""

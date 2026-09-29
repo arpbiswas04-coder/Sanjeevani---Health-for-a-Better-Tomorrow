@@ -1,0 +1,15 @@
+server:
+  host: "0.0.0.0"
+  port: 8080
+  num_rounds: 10
+  min_fit_clients: 3
+  min_available_clients: 3
+strategy:
+  name: "FedAvg"
+  fraction_fit: 1.0
+  fraction_evaluate: 1.0
+privacy:
+  differential_privacy: true
+  epsilon: 1.0
+  delta: 1e-5
+  clip_norm: 1.0

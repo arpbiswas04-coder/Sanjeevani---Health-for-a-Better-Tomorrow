@@ -1,0 +1,7 @@
+client:
+  server_address: "localhost:8080"
+  local_epochs: 3
+  batch_size: 32
+  learning_rate: 0.001
+dataset:
+  path: "datasets/hospital_edge_data.csv"
