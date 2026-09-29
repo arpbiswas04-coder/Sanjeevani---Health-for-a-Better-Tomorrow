@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
+from app.core.errors import install_error_handlers
 from app.api.v1.router import api_router
 
 app = FastAPI(
@@ -11,6 +12,8 @@ app = FastAPI(
     docs_url=f"{settings.API_V1_STR}/docs",
     redoc_url=f"{settings.API_V1_STR}/redoc",
 )
+
+install_error_handlers(app)
 
 # Configure CORS
 app.add_middleware(

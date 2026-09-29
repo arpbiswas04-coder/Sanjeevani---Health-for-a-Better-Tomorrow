@@ -9,6 +9,7 @@ sys.path.insert(0, os.path.realpath(os.path.join(os.path.dirname(__file__), '..'
 
 from app.core.config import settings
 from app.core.database import Base
+import app.models
 
 config = context.config
 
@@ -22,7 +23,7 @@ def get_url():
     db_url = settings.get_database_url()
     if "+asyncpg" in db_url:
         db_url = db_url.replace("+asyncpg", "+psycopg2")
-    return db_url
+    return db_url.replace("+aiosqlite", "")
 
 def run_migrations_offline() -> None:
     url = get_url()
