@@ -2,8 +2,22 @@ import { createBrowserRouter } from 'react-router-dom';
 import { AppShell } from '@/layouts/AppShell';
 import { HomePage } from '@/pages/HomePage';
 import { PlaceholderPage } from '@/pages/PlaceholderPage';
+import { InteractiveResourceMap } from '@/modules/map/InteractiveResourceMap';
+import { InventoryPage } from '@/modules/inventory/InventoryPage';
+import { BedsPage } from '@/modules/beds/BedsPage';
+import { FacilitiesPage } from '@/modules/facilities/FacilitiesPage';
+import { WorkforcePage } from '@/modules/workforce/WorkforcePage';
+import { DiseasePage } from '@/modules/disease/DiseasePage';
+import { EmergencyPage } from '@/modules/emergency/EmergencyPage';
+import { FederatedAIPage } from '@/modules/federated-ai/FederatedAIPage';
+import { AIDashboard } from '@/modules/analytics/AIDashboard';
+import { LoginPage } from '@/modules/auth/LoginPage';
 
 export const router = createBrowserRouter([
+  {
+    path: '/login',
+    element: <LoginPage />,
+  },
   {
     path: '/',
     element: <AppShell />,
@@ -14,63 +28,27 @@ export const router = createBrowserRouter([
       },
       {
         path: 'map',
-        element: (
-          <PlaceholderPage
-            title="Interactive Health Resource Map"
-            phase="Phase 4 Roadmap"
-            description="Geospatial visualization of primary health centers, cold-chain warehouses, and risk clusters using Leaflet/Mapbox GL."
-          />
-        ),
+        element: <InteractiveResourceMap />,
       },
       {
         path: 'facilities',
-        element: (
-          <PlaceholderPage
-            title="Facilities & Hospitals Management"
-            phase="Phase 3 Roadmap"
-            description="Operational telemetry, tier level (PHC/CHC/DH), and facility profile management."
-          />
-        ),
+        element: <FacilitiesPage />,
       },
       {
         path: 'inventory',
-        element: (
-          <PlaceholderPage
-            title="Real-Time Stock Monitoring"
-            phase="Phase 5 Roadmap"
-            description="Live stock ledger, batch tracking, barcode scanning, and inter-facility stock transfers."
-          />
-        ),
+        element: <InventoryPage />,
       },
       {
         path: 'expiry',
-        element: (
-          <PlaceholderPage
-            title="Drug Expiry Tracking & Wastage"
-            phase="Phase 5 Roadmap"
-            description="Early warning risk queue for expiring pharmaceutical batches with automated redistribution suggestions."
-          />
-        ),
+        element: <InventoryPage />,
       },
       {
         path: 'beds',
-        element: (
-          <PlaceholderPage
-            title="Bed Availability & Telemetry"
-            phase="Phase 6 Roadmap"
-            description="Real-time occupancy tracking for ICU, ventilator, oxygen, and general wards."
-          />
-        ),
+        element: <BedsPage />,
       },
       {
         path: 'workforce',
-        element: (
-          <PlaceholderPage
-            title="Workforce & Personnel Management"
-            phase="Phase 6 Roadmap"
-            description="Duty rosters, doctor-to-patient ratio monitoring, and attendance telemetry."
-          />
-        ),
+        element: <WorkforcePage />,
       },
       {
         path: 'patients',
@@ -78,49 +56,25 @@ export const router = createBrowserRouter([
           <PlaceholderPage
             title="Patient Footfall & Queue Telemetry"
             phase="Phase 6 Roadmap"
-            description="OPD/IPD influx monitoring and triage bottleneck detection."
+            description="OPD/IPD influx monitoring, triage bottleneck detection, and patient wait time telemetry."
           />
         ),
       },
       {
         path: 'disease',
-        element: (
-          <PlaceholderPage
-            title="Disease Trend Surveillance"
-            phase="Phase 6 Roadmap"
-            description="Epidemic outbreak detection and spatial disease cluster alerts."
-          />
-        ),
+        element: <DiseasePage />,
       },
       {
         path: 'emergency',
-        element: (
-          <PlaceholderPage
-            title="Emergency Command Mode"
-            phase="Phase 8 Roadmap"
-            description="Crisis escalation dashboard, rapid resource mobilization, and disaster scenario simulations."
-          />
-        ),
+        element: <EmergencyPage />,
       },
       {
         path: 'federated-ai',
-        element: (
-          <PlaceholderPage
-            title="Federated AI Network Monitor"
-            phase="Phase 9 Roadmap"
-            description="Real-time status of edge hospital nodes, training rounds, differential privacy budgets, and model accuracy."
-          />
-        ),
+        element: <FederatedAIPage />,
       },
       {
         path: 'analytics',
-        element: (
-          <PlaceholderPage
-            title="Healthcare Analytics & Resilience"
-            phase="Phase 3 / 7 Roadmap"
-            description="Historical trends, cost optimization, supply chain resilience score, and district benchmarking."
-          />
-        ),
+        element: <AIDashboard />,
       },
       {
         path: 'settings',
