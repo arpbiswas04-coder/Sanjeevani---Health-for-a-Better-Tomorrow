@@ -1,0 +1,18 @@
+{
+  "request_id": "routing-demo-1",
+  "travel_snapshot_id": "synthetic-travel-1",
+  "quantity_unit": "standard_box",
+  "depot": {"facility_id": "warehouse-a", "window": [0, 180]},
+  "stops": [
+    {"facility_id": "phc-a", "quantity": 6, "service_minutes": 5, "window": [10, 70]},
+    {"facility_id": "phc-b", "quantity": 4, "service_minutes": 5, "window": [20, 100]},
+    {"facility_id": "phc-c", "quantity": 5, "service_minutes": 5, "window": [30, 120]}
+  ],
+  "vehicles": [
+    {"vehicle_id": "van-1", "capacity": 10, "shift": [0, 180]},
+    {"vehicle_id": "van-2", "capacity": 6, "shift": [0, 180]}
+  ],
+  "location_ids": ["warehouse-a", "phc-a", "phc-b", "phc-c"],
+  "travel_time_minutes": [[0, 10, 20, 25], [10, 0, 10, 15], [20, 10, 0, 10], [25, 15, 10, 0]],
+  "distance_meters": [[0, 5000, 10000, 12500], [5000, 0, 5000, 7500], [10000, 5000, 0, 5000], [12500, 7500, 5000, 0]]
+}

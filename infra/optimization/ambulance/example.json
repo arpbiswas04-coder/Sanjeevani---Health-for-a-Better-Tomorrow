@@ -1,0 +1,19 @@
+{
+  "request_id": "synthetic-request-1", "snapshot_id": "synthetic-fleet-1",
+  "captured_at": "2026-09-30T12:00:00Z", "emergency_type": "demo-transfer",
+  "required_equipment": ["demo-equipment-a"], "patient_count": 1,
+  "candidates": [
+    {"ambulance_id": "amb-a", "status": "available", "reserved": false, "crew_ready": true,
+     "serviceable": true, "patient_capacity": 1, "equipment": ["demo-equipment-a"],
+     "supported_emergency_types": ["demo-transfer"], "eta_minutes": 8, "distance_km": 4,
+     "observed_at": "2026-09-30T12:00:00Z", "eta_observed_at": "2026-09-30T12:00:00Z"},
+    {"ambulance_id": "amb-b", "status": "available", "reserved": false, "crew_ready": true,
+     "serviceable": true, "patient_capacity": 1, "equipment": ["demo-equipment-a"],
+     "supported_emergency_types": ["demo-transfer"], "eta_minutes": 12, "distance_km": 3,
+     "observed_at": "2026-09-30T12:00:00Z", "eta_observed_at": "2026-09-30T12:00:00Z"},
+    {"ambulance_id": "amb-c", "status": "busy", "reserved": true, "crew_ready": true,
+     "serviceable": true, "patient_capacity": 1, "equipment": [],
+     "supported_emergency_types": ["demo-transfer"], "eta_minutes": 2, "distance_km": 1,
+     "observed_at": "2026-09-30T12:00:00Z", "eta_observed_at": "2026-09-30T12:00:00Z"}
+  ]
+}

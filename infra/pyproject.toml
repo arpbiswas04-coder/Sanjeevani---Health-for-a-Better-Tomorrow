@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "sanjeevani-member4"
+version = "0.1.0"
+description = "Resource optimization foundations for Sanjeevani"
+requires-python = ">=3.11"
+dependencies = []
+
+[project.optional-dependencies]
+transport = ["ortools==9.15.6755"]
+
+[project.scripts]
+sanjeevani-redistribute = "optimization.redistribution.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["optimization*"]
+
+[tool.setuptools.package-data]
+"optimization.ambulance" = ["example.json"]
+"optimization.emergency" = ["example.json", "policy.example.json", "resource-example.json"]
