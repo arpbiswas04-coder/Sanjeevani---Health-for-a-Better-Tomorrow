@@ -24,12 +24,32 @@
     "search": "Quick Search (Ctrl + K)"
   },
   "roles": {
+    "SUPER_ADMIN": "System Administrator",
+    "NATIONAL_ADMIN": "National Health Command",
+    "STATE_ADMIN": "State Health Authority",
+    "DISTRICT_ADMIN": "District Health Authority",
+    "FACILITY_ADMIN": "Hospital / PHC Administrator",
     "national_officer": "National Officer",
     "state_officer": "State Health Director",
     "district_officer": "District Collector / CMO",
     "facility_admin": "Hospital Administrator",
     "logistics_coordinator": "Supply Chain Coordinator",
     "doctor": "Chief Medical Officer"
+  },
+  "auth": {
+    "login": "Sign In",
+    "loginTitle": "Command Access Portal",
+    "loginSubtitle": "National Health Resource Intelligence & Command Platform",
+    "roleSelector": "Select Your Role",
+    "emailLabel": "Official Email / User ID",
+    "passwordLabel": "Passcode / Password",
+    "rememberMe": "Remember this terminal",
+    "forgotPassword": "Forgot passcode / Emergency access",
+    "submitting": "Authenticating...",
+    "roleMismatch": "The selected role does not match this account.",
+    "invalidCredentials": "Invalid credentials. Please verify your credentials or select a demo account below.",
+    "logout": "Sign Out",
+    "demoAccounts": "Demo Authority Credentials"
   },
   "status": {
     "resilienceScore": "Grid Resilience Score",

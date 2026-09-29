@@ -30,25 +30,26 @@ describe('Member 1 Blueprint — Phase & Critical Flow Verification', () => {
     it('renders login credentials form and prefilled role credentials', () => {
       renderWithRouter(<LoginPage />);
 
-      expect(screen.getByText(/Authorized Personnel Single Sign-On/i)).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: /Continue to MFA Verification/i })).toBeInTheDocument();
+      expect(screen.getByText(/Command Access Portal/i)).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /Sign In to Command Portal/i })).toBeInTheDocument();
 
-      // Click role preset button (e.g. District Collector / CMO)
-      const roleBtn = screen.getByRole('button', { name: /District Collector \/ CMO/i });
+      // Click role preset button (District Health Authority)
+      const roleBtn = screen.getByRole('button', { name: /District Health Authority/i });
       fireEvent.click(roleBtn);
 
-      const emailInput = screen.getByDisplayValue(/cmo.lucknow@sanjeevani.gov.in/i) as HTMLInputElement;
+      const emailInput = screen.getByDisplayValue(/district.lucknow@sanjeevani.gov.in/i) as HTMLInputElement;
       expect(emailInput).toBeInTheDocument();
     });
 
-    it('triggers MFA challenge step upon credential submission', () => {
+    it('validates password visibility toggle', () => {
       renderWithRouter(<LoginPage />);
 
-      const submitBtn = screen.getByRole('button', { name: /Continue to MFA Verification/i });
-      fireEvent.click(submitBtn);
+      const passInput = screen.getByLabelText(/Passcode/i) as HTMLInputElement;
+      expect(passInput.type).toBe('password');
 
-      expect(screen.getByText(/Enter Security Token/i)).toBeInTheDocument();
-      expect(screen.getByPlaceholderText(/123456/i)).toBeInTheDocument();
+      const toggleBtn = screen.getByRole('button', { name: /Show password/i });
+      fireEvent.click(toggleBtn);
+      expect(passInput.type).toBe('text');
     });
   });
 
