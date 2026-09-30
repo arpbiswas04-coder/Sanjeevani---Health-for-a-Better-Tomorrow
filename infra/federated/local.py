@@ -104,7 +104,7 @@ def provision(name="local-dev"):
     return {"bundle": str(target), **manifest}
 
 
-def launch(name, role, node=None):
+def launch(name, role, node=None, *, rounds=1, max_wait_seconds=600):
     target = bundle_path(name)
     manifest = json.loads((target / "manifest.json").read_text())
     if manifest.get("purpose") != "localhost-development-only" or datetime.fromisoformat(manifest["expires_at"]) <= datetime.now(timezone.utc):
@@ -122,7 +122,8 @@ def launch(name, role, node=None):
         if node not in NODES: raise ValidationError("Unknown local node")
         directory = target / "clients" / node
         environment["SANJEEVANI_NODE_KEY_HEX"] = (directory / "signing-key.txt").read_text()
-        extra = ["--url", "https://127.0.0.1:8443", "--node", node]
+        extra = ["--url", "https://127.0.0.1:8443", "--node", node,
+                 "--rounds", str(rounds), "--max-wait-seconds", str(max_wait_seconds)]
         module = "federated.clients.https"
     command = [sys.executable, "-m", module, "--ca", str(directory / "ca.pem"),
                "--cert", str(directory / "cert.pem"), "--key", str(directory / "key.pem"), *extra]
@@ -134,12 +135,14 @@ def main():
     parser.add_argument("action", choices=("provision", "server", "client"))
     parser.add_argument("--bundle", default="local-dev")
     parser.add_argument("--node", choices=NODES)
+    parser.add_argument("--rounds", type=int, default=1)
+    parser.add_argument("--max-wait-seconds", type=int, default=600)
     args = parser.parse_args()
     try:
         if args.action == "provision":
             print(json.dumps(provision(args.bundle), indent=2))
             return 0
-        return launch(args.bundle, args.action, args.node)
+        return launch(args.bundle, args.action, args.node, rounds=args.rounds, max_wait_seconds=args.max_wait_seconds)
     except KeyboardInterrupt:
         return 130
     except (OSError, ValueError, KeyError, IndexError, TypeError, ImportError, subprocess.SubprocessError):

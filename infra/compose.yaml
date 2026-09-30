@@ -25,6 +25,9 @@ x-runtime: &runtime
 x-client: &client
   <<: *runtime
   profiles: [training]
+  environment:
+    FEDERATION_CLIENT_ROUNDS: '${FEDERATION_CLIENT_ROUNDS:-1}'
+    FEDERATION_CLIENT_MAX_WAIT_SECONDS: '${FEDERATION_CLIENT_MAX_WAIT_SECONDS:-600}'
   # Shares only the server network namespace so existing localhost certificates work.
   # Each container still receives only its own credential directory.
   network_mode: service:federation-server

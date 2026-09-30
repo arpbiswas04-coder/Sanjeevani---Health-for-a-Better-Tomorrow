@@ -1,5 +1,9 @@
 # Member 4 implementation roadmap
 
+Current acceptance status: see `docs/member4-handoff.md`. Ten small synthetic CLI
+demos passed through `delivery.py --demo`; this is not a claim that privacy,
+full-stack integration or production deployment is complete.
+
 All paths in this roadmap are relative to the root `infra/` directory. Keep
 Member 4 source code, configuration, tests, and documentation in that directory.
 
@@ -66,12 +70,16 @@ Implemented: `optimization/procurement/` recommends integer-pack purchases for
 remaining shortages under budget, supplier eligibility, minimum orders,
 delivery deadlines and shelf-life limits. See `docs/procurement-recommendations.md`.
 
-Next: federated learning prototype foundations (Milestone 5).
 Confirm the provisional normalization contract with Member 3. Live model
-integration remains pending. Add constrained workforce and procurement support.
+integration remains pending. Workforce and procurement modules are implemented.
 Agree on resilience score semantics before implementing its orchestration.
 
 ## Milestone 5 — federated learning
+
+Added: bounded multi-round client polling, stale-training discard, explicit timeout
+and no automatic retry of ambiguous submissions. Available through direct/local
+CLI and Docker client settings. Three scheduling checks passed without training;
+see `docs/federated-round-runner.md`.
 
 Implemented: standard-library synthetic local clients, coordinator, sample-weighted
 FedAvg, round/model validation, minimum-participant handling, node metadata and
@@ -167,7 +175,8 @@ checkpoints and listener healthcheck. Static checks passed; Docker is unavailabl
 on the implementation host, so builds/runtime remain unverified. See
 `docs/federated-docker.md`. The complete application stack remains pending integration.
 
-Start Compose once service contracts exist. Add linting, image builds and scans,
+Verify the supplied Member 4 Compose stack on a Docker-capable host and integrate
+the team services once contracts are agreed. Add linting, execute image builds and scans,
 staging deployment, protected monitoring, secrets management, service identity,
 and tested backup/restore. Keep production deployment a separate approved action.
 

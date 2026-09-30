@@ -16,7 +16,9 @@ def main():
     elif len(role) == 2 and role[0] == "client" and role[1] in ("district-a", "district-b", "district-c"):
         environment["SANJEEVANI_NODE_KEY_HEX"] = (directory / "signing-key.txt").read_text()
         module = "federated.clients.https"
-        arguments = ["--url", "https://127.0.0.1:8443", "--node", role[1]]
+        arguments = ["--url", "https://127.0.0.1:8443", "--node", role[1],
+                     "--rounds", environment.get("FEDERATION_CLIENT_ROUNDS", "1"),
+                     "--max-wait-seconds", environment.get("FEDERATION_CLIENT_MAX_WAIT_SECONDS", "600")]
     else:
         raise ValueError("Invalid container role")
     command = [sys.executable, "-m", module, "--ca", str(directory / "ca.pem"),

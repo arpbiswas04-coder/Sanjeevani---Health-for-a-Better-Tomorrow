@@ -1,6 +1,8 @@
 # Member 4 — optimization, federation, and infrastructure
 
 All Member 4 implementation files live inside this `infra/` directory.
+Start with the [delivery checklist and handoff](docs/member4-handoff.md) for a
+single demo command, verified scope and mandatory unfinished integration work.
 Run the commands below from `infra/`, not from the repository root.
 
 ```powershell
@@ -32,6 +34,7 @@ If Python is not on PATH, see the verified Windows command in the
   [signed federation update admission](docs/federated-authentication.md),
   [mutual-TLS federation service](docs/federated-https.md),
   [local credential setup and launch commands](docs/federated-local-setup.md),
+  [multi-round regional client runner](docs/federated-round-runner.md),
   [Member 4 Docker stack](docs/federated-docker.md),
   [federation metrics and alerts](docs/federated-monitoring.md),
   [federation request rate limits](docs/federated-rate-limits.md),

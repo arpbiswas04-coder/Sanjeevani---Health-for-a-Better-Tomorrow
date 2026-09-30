@@ -49,21 +49,26 @@ def main():
     parser.add_argument("--ca", required=True)
     parser.add_argument("--cert", required=True)
     parser.add_argument("--key", required=True)
+    parser.add_argument("--rounds", type=int, default=1)
+    parser.add_argument("--poll-seconds", type=int, default=15)
+    parser.add_argument("--max-wait-seconds", type=int, default=600)
     args = parser.parse_args()
     try:
         client = FederationClient(args.url, ca=args.ca, cert=args.cert, key=args.key)
         signing_key = bytes.fromhex(os.environ["SANJEEVANI_NODE_KEY_HEX"])
-        state = client.round_request()
-        from federated.strategies.fedavg import MODEL_SCHEMA
-        if state.get("model_schema") != MODEL_SCHEMA:
-            raise ValidationError("Unsupported server model schema")
         # Reuse the tested PyTorch adapter. Local samples never enter HTTP packets.
         os.environ["FLWR_TELEMETRY_ENABLED"] = "0"
         from federated.clients.regional_worker import execute
-        result = execute({"node_id": args.node, "action": "fit", "parameters": state["parameters"],
-                          "round": state["round"], "model_version": state["model_version"]})
-        print(json.dumps(client.submit(result["update"], state["challenge"], signing_key)))
-        return 0
+        from federated.clients.runner import run_rounds
+        def train(state):
+            return execute({"node_id": args.node, "action": "fit", "parameters": state["parameters"],
+                            "round": state["round"], "model_version": state["model_version"]})["update"]
+        result = run_rounds(client, train, signing_key, rounds=args.rounds,
+                            poll_seconds=args.poll_seconds, max_wait_seconds=args.max_wait_seconds)
+        print(json.dumps(result))
+        return 0 if result["status"] == "submitted" else 3
+    except KeyboardInterrupt:
+        return 130
     except (OSError, ValueError, KeyError, TypeError, RuntimeError, ImportError, http.client.HTTPException):
         print("federation_client_failed: check credentials, server response and optional dependencies")
         return 2
