@@ -49,19 +49,56 @@ Persistent tracking document for Member 3 (`ai/member-3`) machine learning pipel
 
 ---
 
-## 6. Next Phase
-- **Target**: **Phase 2 — Demand Forecasting** (`ai/demand_forecasting/`)
+## 6. Phase 3 Completed Implementation — Stockout Prediction
+
+| File | Type | Description |
+| :--- | :--- | :--- |
+| [`ai/stockout_prediction/config.py`](./stockout_prediction/config.py) | Config | Model version tag, NEAR_ZERO_CONSUMPTION guard, and documented risk-level coverage thresholds (`COVERAGE_CRITICAL_THRESHOLD=0.5`, `COVERAGE_MODERATE_THRESHOLD=1.5`) |
+| [`ai/stockout_prediction/schema.py`](./stockout_prediction/schema.py) | Schema | Pydantic v2 request (6 documented inputs + UUIDs) and response (`generated_at`, `coverage_ratio`, canonical `RiskLevel`, UUID v4, UTC ISO-8601) |
+| [`ai/stockout_prediction/features.py`](./stockout_prediction/features.py) | Features | Deterministic `build_stockout_features`: available quantity, demand_during_lead_time, coverage_ratio, days_until_stockout — division-by-zero safe |
+| [`ai/stockout_prediction/data.py`](./stockout_prediction/data.py) | Data | Schema-validated record ingestion → clean `pd.DataFrame` with finite-value guard |
+| [`ai/stockout_prediction/train.py`](./stockout_prediction/train.py) | Train | `StockoutCoverageForecaster(BaseForecaster)` — validation-based fit (no supervised target per spec); `train_stockout_pipeline` convenience entry point |
+| [`ai/stockout_prediction/evaluate.py`](./stockout_prediction/evaluate.py) | Evaluate | `evaluate_stockout_predictions` using real `calculate_classification_metrics` from `ai/common/metrics` |
+| [`ai/stockout_prediction/predict.py`](./stockout_prediction/predict.py) | Inference | `StockoutPredictor(BasePredictor)` — schema-validated inference, canonical `RiskLevel` assignment, `generated_at` UTC timestamp, `placeholder()` preserved |
+| [`ai/tests/test_stockout_prediction.py`](./tests/test_stockout_prediction.py) | Tests | 77 focused unit tests across 5 test classes; all pass |
 
 ---
 
-## 7. Phase 2 Planned Work
-- `ai/demand_forecasting/schema.py`: Input/output Pydantic v2 schemas for medicine and equipment consumption series and forecast intervals.
-- `ai/demand_forecasting/data.py`: Consumption series loading, missing timestamp interpolation, train/test split.
-- `ai/demand_forecasting/features.py`: Calendar features, autoregressive lags, rolling statistics.
-- `ai/demand_forecasting/train.py`: Initial demand forecasting model: LightGBM/XGBoost, as specified by the Member 3 blueprint. Dependency installation/requirements changes must be evaluated before implementation and must remain within documented project technology.
-- `ai/demand_forecasting/evaluate.py`: Backtesting validation computing real MAE, RMSE, MAPE, and WAPE.
-- `ai/demand_forecasting/predict.py`: Type-safe inference endpoint contract validating schemas and returning typed predictions (retaining placeholder backwards compatibility).
-- `ai/tests/test_demand_forecasting.py`: End-to-end unit and integration tests.
+## 7. Phase 3 Validation Summary
+- **Phase 3 Unit Tests**: 77 tests passed (`python -m unittest ai.tests.test_stockout_prediction -v`).
+- **Full Suite (Phase 1 + Phase 2 + Phase 3)**: 110 tests passed (`python -m unittest discover -s ai/tests -v`).
+- **Repository Boundaries**: Zero files outside `ai/` touched. Phase 2 untouched.
+- **No fabricated metrics, probabilities, or confidence scores introduced.**
+- **Python**: 3.14.3 (available as `python`).
+
+---
+
+## 8. Phase 3 Key Design Decisions
+
+1. **Deterministic rule only**: The spec provides six inputs but no labelled stockout-event training target. Inventing a supervised target is forbidden by `ai/AGENTS.md`. The pipeline uses classical reorder-point theory; `fit()` validates records without learning weights.
+2. **`demand_during_lead_time = daily_consumption × supplier_lead_time`**: The coverage need during restocking is computed from the consumption rate and lead time window. `predicted_demand` (Phase 2 output) is a separate field retained in the schema for upstream visibility but does not override the lead-time formula.
+3. **`coverage_ratio` thresholds** (documented in `config.py`):
+   - `< 0.5` while stockout predicted → `CRITICAL` (severely undercovered)
+   - `≥ 0.5` while stockout predicted → `HIGH`
+   - No stockout, `< 1.5` → `MODERATE` (approaching reorder point — conservative 50 % buffer)
+   - No stockout, `≥ 1.5` → `LOW` (adequate buffer)
+4. **`coverage_ratio = 1.0` when `demand_during_lead_time` is near-zero**: Prevents division-by-zero while correctly expressing that zero demand during lead time is fully covered. This saturates to MODERATE (not LOW) because ratio=1.0 is still below COVERAGE_MODERATE_THRESHOLD.
+5. **`days_until_stockout = None` when `daily_consumption ≤ NEAR_ZERO_CONSUMPTION`**: Semantically correct — if nothing is being consumed, depletion is undefined, not infinite.
+6. **`generated_at` + `coverage_ratio` added to response schema**: Missing from the previous agent's implementation. `generated_at` matches Phase 2 conventions; `coverage_ratio` provides full observability into the risk scoring decision.
+
+---
+
+## 9. Next Phase
+- **Target**: **Phase 4** (per project roadmap)
+
+---
+
+## 10. Important Safety Rules
+1. Work exclusively within `ai/` on branch `ai/member-3`.
+2. Do not modify `frontend/`, `backend/`, `infra/`, `federated/`, `optimization/`, or any other team member's files.
+3. Treat project Markdown specifications in `docs/` and root `README.md` as the absolute source of truth.
+4. Never fabricate metrics, confidence intervals, or model behavior.
+5. Checkpoint progress and verify test passes before transitioning across major phases.
 
 ---
 
