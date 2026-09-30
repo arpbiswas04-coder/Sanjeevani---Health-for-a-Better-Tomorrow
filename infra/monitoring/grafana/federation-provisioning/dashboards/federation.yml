@@ -1,0 +1,11 @@
+apiVersion: 1
+providers:
+  - name: Federation
+    orgId: 1
+    folder: Sanjeevani
+    type: file
+    disableDeletion: true
+    allowUiUpdates: false
+    updateIntervalSeconds: 30
+    options:
+      path: /var/lib/grafana-dashboards

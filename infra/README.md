@@ -15,7 +15,7 @@ If Python is not on PATH, see the verified Windows command in the
 ## Contents
 
 - `optimization/`: working redistribution engine, synthetic examples, and tests.
-- `federated/`: federation milestone plan; no training implemented yet.
+- `federated/`: three-region synthetic learning prototype with validated FedAvg.
 - `docs/`: [backend contract](docs/redistribution-contract.md),
   [inventory adapter handoff](docs/backend-handoff.md),
   [multi-batch redistribution](docs/multi-batch-redistribution.md),
@@ -23,6 +23,22 @@ If Python is not on PATH, see the verified Windows command in the
   [vehicle routing](docs/vehicle-routing.md),
   [ambulance allocation](docs/ambulance-allocation.md),
   [emergency priority scoring](docs/emergency-priority.md),
+  [priority-aware resource recommendations](docs/emergency-resource-recommendations.md),
+  [staff redistribution](docs/workforce-redistribution.md),
+  [procurement recommendations](docs/procurement-recommendations.md),
+  [federated learning foundation](docs/federated-foundation.md),
+  [federated checkpoint recovery](docs/federated-checkpoints.md),
+  [Flower/PyTorch regional adapter](docs/flower-pytorch-regional.md),
+  [signed federation update admission](docs/federated-authentication.md),
+  [mutual-TLS federation service](docs/federated-https.md),
+  [local credential setup and launch commands](docs/federated-local-setup.md),
+  [Member 4 Docker stack](docs/federated-docker.md),
+  [federation metrics and alerts](docs/federated-monitoring.md),
+  [Grafana federation dashboard](docs/federated-grafana.md),
+  [encrypted federation backup and recovery](docs/federated-backup.md),
+  [dependency and image scanning](docs/security-scanning.md),
+  [redistribution scenario simulation](docs/scenario-simulation.md),
+  [sequential inventory simulation](docs/inventory-timeline.md),
   [quickstart](docs/member4-quickstart.md), and
   [roadmap](docs/member4-roadmap.md).
 - `ci-cd/`: proposed GitHub Actions workflow template.
@@ -73,5 +89,6 @@ run the test commands locally.
 
 Agree with Member 2 on backend startup, database, dependency versions, health
 endpoints, and environment variables before defining shared Docker services.
-Deployment, HTTPS, access controls, monitoring, and backup/restore are not
-implemented yet. The CLI healthcheck confirms module execution only.
+Shared application deployment, access controls, monitoring, and backup/restore
+are not implemented yet. Federation has a separate private-development mutual-TLS
+HTTPS service; see its guide above. The CLI healthcheck confirms module execution only.

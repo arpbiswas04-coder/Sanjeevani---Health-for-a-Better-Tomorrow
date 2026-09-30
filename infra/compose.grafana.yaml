@@ -1,0 +1,44 @@
+# Use after compose.yaml and compose.monitoring.yaml.
+services:
+  grafana:
+    image: grafana/grafana:12.1.0
+    user: '${MEMBER4_UID:-1000}'
+    depends_on:
+      prometheus:
+        condition: service_started
+    ports:
+      - '127.0.0.1:3000:3000'
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD__FILE: /run/secrets/grafana-admin-password
+      GF_AUTH_ANONYMOUS_ENABLED: 'false'
+      GF_USERS_ALLOW_SIGN_UP: 'false'
+      GF_AUTH_DISABLE_LOGIN_FORM: 'false'
+      GF_ANALYTICS_REPORTING_ENABLED: 'false'
+      GF_ANALYTICS_CHECK_FOR_UPDATES: 'false'
+      GF_ANALYTICS_CHECK_FOR_PLUGIN_UPDATES: 'false'
+      GF_LOG_MODE: console
+      GF_SERVER_ROOT_URL: http://127.0.0.1:3000
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    tmpfs:
+      - /tmp:rw,nosuid,size=64m,mode=1777
+      - /var/lib/grafana:rw,nosuid,size=256m,mode=1777
+    mem_limit: 512m
+    pids_limit: 128
+    volumes:
+      - ./monitoring/grafana/federation-provisioning:/etc/grafana/provisioning:ro
+      - ./monitoring/grafana/dashboards:/var/lib/grafana-dashboards:ro
+      - type: bind
+        source: ./federated/secrets/local-dev/grafana-admin-password
+        target: /run/secrets/grafana-admin-password
+        read_only: true
+        bind:
+          create_host_path: false
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: '3'
+    restart: 'no'

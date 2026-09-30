@@ -1,0 +1,24 @@
+{
+  "request_id": "synthetic-staff-1", "snapshot_id": "synthetic-roster-1",
+  "captured_at": "2026-09-30T12:00:00Z",
+  "shift_start": "2026-09-30T13:00:00Z", "shift_end": "2026-09-30T21:00:00Z",
+  "staffing": [{"facility_id": "source", "role": "demo-role", "on_duty": 3, "minimum_required": 1}],
+  "workers": [
+    {"worker_id": "worker-a", "source_facility": "source", "role": "demo-role",
+     "skills": ["basic", "special"], "available": true, "reserved": false, "transferable": true,
+     "rest_ready": true, "available_from": "2026-09-30T12:00:00Z", "available_until": "2026-09-30T23:00:00Z",
+     "observed_at": "2026-09-30T12:00:00Z"},
+    {"worker_id": "worker-b", "source_facility": "source", "role": "demo-role",
+     "skills": ["basic"], "available": true, "reserved": false, "transferable": true,
+     "rest_ready": true, "available_from": "2026-09-30T12:00:00Z", "available_until": "2026-09-30T23:00:00Z",
+     "observed_at": "2026-09-30T12:00:00Z"}
+  ],
+  "demands": [
+    {"facility_id": "phc-special", "role": "demo-role", "required_staff": 1, "required_skills": ["special"]},
+    {"facility_id": "phc-general", "role": "demo-role", "required_staff": 1, "required_skills": ["basic"]}
+  ],
+  "lanes": [
+    {"source": "source", "destination": "phc-special", "outbound_minutes": 20, "return_minutes": 20},
+    {"source": "source", "destination": "phc-general", "outbound_minutes": 10, "return_minutes": 10}
+  ]
+}

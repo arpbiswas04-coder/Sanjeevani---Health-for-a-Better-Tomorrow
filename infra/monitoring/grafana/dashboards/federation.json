@@ -1,0 +1,361 @@
+{
+  "uid": "sanjeevani-federation",
+  "title": "Sanjeevani Federation",
+  "description": "Private development federation operations; synthetic model.",
+  "tags": [
+    "sanjeevani",
+    "federation"
+  ],
+  "schemaVersion": 39,
+  "version": 1,
+  "editable": false,
+  "timezone": "browser",
+  "refresh": "15s",
+  "time": {
+    "from": "now-1h",
+    "to": "now"
+  },
+  "panels": [
+    {
+      "id": 1,
+      "title": "Authenticated scrape availability",
+      "description": "1 means Prometheus successfully scraped the monitoring-certificate endpoint; 0 means scrape failed.",
+      "type": "stat",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "federation-prometheus"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 0,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "up{job=\"federation\"}",
+          "legendFormat": "Scrape up",
+          "range": true
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "noValue": "No data"
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "value",
+        "graphMode": "none"
+      }
+    },
+    {
+      "id": 2,
+      "title": "Global model version",
+      "description": "Only increments after successful aggregation; may resume from a checkpoint.",
+      "type": "stat",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "federation-prometheus"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 0,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sanjeevani_federation_model_version{job=\"federation\"}",
+          "legendFormat": "Version",
+          "range": true
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "noValue": "No data"
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "value",
+        "graphMode": "none"
+      }
+    },
+    {
+      "id": 3,
+      "title": "Update admission rate",
+      "description": "Accepted means pending, not aggregated. Rejections exclude TLS handshake failures.",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "federation-prometheus"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 8,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "rate(sanjeevani_federation_updates_accepted_total{job=\"federation\"}[5m])",
+          "legendFormat": "accepted",
+          "range": true
+        },
+        {
+          "refId": "B",
+          "expr": "rate(sanjeevani_federation_updates_rejected_total{job=\"federation\"}[5m])",
+          "legendFormat": "rejected",
+          "range": true
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ops",
+          "noValue": "No data"
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        }
+      }
+    },
+    {
+      "id": 4,
+      "title": "Node status at last recorded round",
+      "description": "These are counts by coordinator status, not live connectivity.",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "federation-prometheus"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 8,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sanjeevani_federation_nodes_registered{job=\"federation\"}",
+          "legendFormat": "registered",
+          "range": true
+        },
+        {
+          "refId": "B",
+          "expr": "sanjeevani_federation_nodes_accepted{job=\"federation\"}",
+          "legendFormat": "accepted",
+          "range": true
+        },
+        {
+          "refId": "C",
+          "expr": "sanjeevani_federation_nodes_rejected{job=\"federation\"}",
+          "legendFormat": "rejected",
+          "range": true
+        },
+        {
+          "refId": "D",
+          "expr": "sanjeevani_federation_nodes_missing{job=\"federation\"}",
+          "legendFormat": "missing",
+          "range": true
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "noValue": "No data"
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        }
+      }
+    },
+    {
+      "id": 5,
+      "title": "Rounds over the last ten minutes",
+      "description": "Counters reset at process startup. Closed includes insufficient-participant rounds.",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "federation-prometheus"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 16,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "increase(sanjeevani_federation_rounds_closed_total{job=\"federation\"}[10m])",
+          "legendFormat": "closed",
+          "range": true
+        },
+        {
+          "refId": "B",
+          "expr": "increase(sanjeevani_federation_rounds_insufficient_total{job=\"federation\"}[10m])",
+          "legendFormat": "insufficient",
+          "range": true
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "noValue": "No data"
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        }
+      }
+    },
+    {
+      "id": 6,
+      "title": "Latest aggregation duration",
+      "description": "Synchronous aggregation only; excludes client training, round waiting and checkpoint I/O.",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "federation-prometheus"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 16,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sanjeevani_federation_last_round_close_duration_seconds{job=\"federation\"}",
+          "legendFormat": "Seconds",
+          "range": true
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "noValue": "No data"
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        }
+      }
+    },
+    {
+      "id": 7,
+      "title": "Age of last successful checkpoint",
+      "description": "No data until this process successfully saves a checkpoint; restored file age is not measured.",
+      "type": "stat",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "federation-prometheus"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 24,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "time() - (sanjeevani_federation_last_checkpoint_timestamp_seconds{job=\"federation\"} > 0)",
+          "legendFormat": "Seconds",
+          "range": true
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "noValue": "No data"
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "value",
+        "graphMode": "none"
+      }
+    },
+    {
+      "id": 8,
+      "title": "Firing federation alerts",
+      "description": "Prometheus rule state only. No external notification delivery configured.",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "federation-prometheus"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 24,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "ALERTS{job=\"federation\",alertstate=\"firing\"}",
+          "legendFormat": "{{alertname}}",
+          "range": true
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "noValue": "No data"
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        }
+      }
+    }
+  ]
+}

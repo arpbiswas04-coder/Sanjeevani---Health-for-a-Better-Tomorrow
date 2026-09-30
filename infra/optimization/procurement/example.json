@@ -1,0 +1,19 @@
+{
+  "request_id": "synthetic-purchase-1", "shortage_snapshot_id": "synthetic-shortage-1",
+  "captured_at": "2026-09-30T12:00:00Z", "destination": "phc-a",
+  "medicine_id": "med-22", "quantity_unit": "tablet", "required_quantity": 25,
+  "max_overstock_units": 5, "budget_paise": 450, "max_lead_time_days": 3,
+  "min_shelf_life_days_on_arrival": 30,
+  "offers": [
+    {"supplier_id": "supplier-a", "quote_id": "quote-a", "approved": true,
+     "medicine_id": "med-22", "quantity_unit": "tablet", "pack_size": 10, "available_packs": 10,
+     "minimum_order_packs": 1, "price_per_pack_paise": 100, "delivery_fee_paise": 50,
+     "lead_time_days": 2, "shelf_life_days_on_arrival": 90,
+     "observed_at": "2026-09-30T12:00:00Z", "valid_until": "2026-09-30T14:00:00Z"},
+    {"supplier_id": "supplier-b", "quote_id": "quote-b", "approved": true,
+     "medicine_id": "med-22", "quantity_unit": "tablet", "pack_size": 5, "available_packs": 10,
+     "minimum_order_packs": 2, "price_per_pack_paise": 80, "delivery_fee_paise": 0,
+     "lead_time_days": 1, "shelf_life_days_on_arrival": 60,
+     "observed_at": "2026-09-30T12:00:00Z", "valid_until": "2026-09-30T14:00:00Z"}
+  ]
+}

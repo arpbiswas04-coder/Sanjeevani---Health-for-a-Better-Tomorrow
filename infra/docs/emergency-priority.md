@@ -92,8 +92,8 @@ unsupported confidence scores are assigned.
 Member 1 can display the ordered facilities, factor contributions and separate
 data-quality issues. Member 2 should authenticate requests, obtain trusted
 inputs, persist/audit the result and recheck validity before using it in a
-resource recommendation. The existing transport allocator does not yet consume
-these scores; coupling priority with resource constraints is the next step.
+resource recommendation. The [resource recommendation wrapper](emergency-resource-recommendations.md)
+now connects scores to transport constraints through a three-stage objective.
 Do not override eligibility or approval constraints using a high score.
 
 CLI exit 0 means evaluation completed, even when every facility is unscored;

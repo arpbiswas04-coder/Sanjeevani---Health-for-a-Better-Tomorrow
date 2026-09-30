@@ -1,4 +1,5 @@
 .venv/
+.venv-federated/
 __pycache__/
 *.py[cod]
 *.egg-info/
@@ -12,3 +13,6 @@ htmlcov/
 .env.*
 !.env.example
 outputs/
+federated/checkpoints/
+federated/backups/
+federated/secrets/

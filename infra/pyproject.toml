@@ -11,13 +11,18 @@ dependencies = []
 
 [project.optional-dependencies]
 transport = ["ortools==9.15.6755"]
+federation = ["flwr==1.22.0", "torch==2.9.0"]
 
 [project.scripts]
 sanjeevani-redistribute = "optimization.redistribution.cli:main"
 
 [tool.setuptools.packages.find]
-include = ["optimization*"]
+include = ["optimization*", "federated*"]
 
 [tool.setuptools.package-data]
+"optimization.simulation" = ["example.json", "timeline-example.json"]
 "optimization.ambulance" = ["example.json"]
 "optimization.emergency" = ["example.json", "policy.example.json", "resource-example.json"]
+"optimization.workforce" = ["example.json"]
+"optimization.procurement" = ["example.json"]
+"federated" = ["configs/demo.json"]

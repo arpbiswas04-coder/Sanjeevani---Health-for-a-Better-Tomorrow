@@ -1,0 +1,17 @@
+FROM python:3.12-slim
+
+ARG MEMBER4_UID=1000
+ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1 FLWR_TELEMETRY_ENABLED=0 OMP_NUM_THREADS=1 HOME=/tmp
+WORKDIR /app/infra
+RUN python -m pip install --no-cache-dir torch==2.9.0 --index-url https://download.pytorch.org/whl/cpu \
+    && python -m pip install --no-cache-dir flwr==1.22.0 \
+    && useradd --uid ${MEMBER4_UID} --create-home member4 \
+    && mkdir -p /app/infra/federated/checkpoints \
+    && chown member4:member4 /app/infra/federated/checkpoints
+COPY federated ./federated
+COPY optimization/common ./optimization/common
+COPY optimization/__init__.py ./optimization/__init__.py
+COPY docker/federation-entrypoint.py ./docker/federation-entrypoint.py
+USER member4
+ENTRYPOINT ["python", "docker/federation-entrypoint.py"]
+CMD ["server"]
