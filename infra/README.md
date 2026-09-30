@@ -34,6 +34,7 @@ If Python is not on PATH, see the verified Windows command in the
   [local credential setup and launch commands](docs/federated-local-setup.md),
   [Member 4 Docker stack](docs/federated-docker.md),
   [federation metrics and alerts](docs/federated-monitoring.md),
+  [federation request rate limits](docs/federated-rate-limits.md),
   [Grafana federation dashboard](docs/federated-grafana.md),
   [encrypted federation backup and recovery](docs/federated-backup.md),
   [dependency and image scanning](docs/security-scanning.md),

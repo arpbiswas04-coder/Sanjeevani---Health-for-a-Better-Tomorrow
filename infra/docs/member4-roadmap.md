@@ -135,6 +135,11 @@ scenario configuration and seeds, and rerun forecasting and optimization.
 
 ## Infrastructure throughout
 
+Implemented: configurable per-certificate-identity request budgets in the HTTPS
+service, HTTP 429/Retry-After, bounded limiter state and throttling metrics. Four
+focused checks passed. See `docs/federated-rate-limits.md`. Pre-authentication
+connection controls and production HTTP runtime hardening remain pending.
+
 Added to the inactive CI template: separate transport/federation dependency audits,
 federation image build and HIGH/CRITICAL vulnerability gate, with retained reports.
 Only static configuration checks performed; activation and actual scan results

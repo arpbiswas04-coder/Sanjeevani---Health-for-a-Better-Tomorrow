@@ -12,6 +12,7 @@ from federated.server.admission import AuthenticatedRounds, MAX_PACKET_BYTES
 from federated.server.checkpoints import load_checkpoint
 from federated.server.coordinator import Coordinator
 from federated.server.metrics import Metrics, is_monitor
+from federated.server.rate_limit import IdentityLimiter
 from optimization.common.validation import ValidationError
 
 IDENTITY_PREFIX = "urn:sanjeevani:node:"
@@ -28,11 +29,13 @@ def server_context(ca, cert, key):
 
 class FederationServer(HTTPServer):
     """Sequential requests bound concurrency; handshake and I/O time out."""
-    def __init__(self, address, admission, context):
+    def __init__(self, address, admission, context, *, requests_per_minute=30, burst=10):
         self.admission = admission
         self.nodes = frozenset(admission.state()["nodes"])
         self.context = context
         self.metrics = Metrics()
+        self.limiter = IdentityLimiter([("node", node) for node in self.nodes] + [("monitor", "metrics")],
+                                       requests_per_minute=requests_per_minute, burst=burst)
         super().__init__(address, Handler)
         self.timeout = 1
 
@@ -57,7 +60,7 @@ class Handler(BaseHTTPRequestHandler):
     def log_message(self, format, *args):
         pass
 
-    def reply(self, status, value):
+    def reply(self, status, value, *, retry_after=None):
         if self.command == "POST" and self.path == "/v1/updates":
             if status == 202: self.server.metrics.accepted += 1
             elif status >= 400: self.server.metrics.rejected += 1
@@ -67,9 +70,18 @@ class Handler(BaseHTTPRequestHandler):
         self.send_header("Content-Length", str(len(raw)))
         self.send_header("Cache-Control", "no-store")
         self.send_header("Connection", "close")
+        if retry_after is not None: self.send_header("Retry-After", str(retry_after))
         self.end_headers()
         self.close_connection = True
         self.wfile.write(raw)
+
+    def allow_request(self, identity):
+        wait = self.server.limiter.retry_after(identity)
+        if wait:
+            self.server.metrics.rate_limited += 1
+            self.reply(429, {"error": "rate_limited"}, retry_after=wait)
+            return False
+        return True
 
     def identity(self):
         # Monitoring credentials must never participate in training.
@@ -83,13 +95,14 @@ class Handler(BaseHTTPRequestHandler):
         if len(names) != 1 or names[0] not in self.server.nodes:
             self.reply(403, {"error": "unregistered_certificate_identity"})
             return None
-        return names[0]
+        return names[0] if self.allow_request(("node", names[0])) else None
 
     def do_GET(self):
         if self.path == "/metrics":
             if not is_monitor(self.connection.getpeercert()):
                 self.reply(403, {"error": "monitor_certificate_required"})
                 return
+            if not self.allow_request(("monitor", "metrics")): return
             raw = self.server.metrics.render(self.server.admission.state())
             self.send_response(200)
             self.send_header("Content-Type", "text/plain; version=0.0.4; charset=utf-8")
@@ -140,6 +153,8 @@ def main():
     parser.add_argument("--cert", required=True)
     parser.add_argument("--key", required=True)
     parser.add_argument("--round-seconds", type=int, default=120)
+    parser.add_argument("--requests-per-minute", type=int, default=30)
+    parser.add_argument("--request-burst", type=int, default=10)
     parser.add_argument("--checkpoint", type=Path, required=True)
     args = parser.parse_args()
     try:
@@ -153,7 +168,8 @@ def main():
         keys = {node: bytes.fromhex(value) for node, value in raw_keys.items()}
         admission = AuthenticatedRounds(coordinator, keys)
         context = server_context(args.ca, args.cert, args.key)
-        with FederationServer((args.host, args.port), admission, context) as server:
+        with FederationServer((args.host, args.port), admission, context,
+                              requests_per_minute=args.requests_per_minute, burst=args.request_burst) as server:
             print("federation_https_ready", flush=True)
             deadline = time.monotonic() + args.round_seconds
             while True:

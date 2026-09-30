@@ -6,6 +6,7 @@ from unittest.mock import Mock
 from federated.server.https import Handler
 from federated.server.metrics import Metrics, MONITOR_URI
 from federated.server.coordinator import Coordinator
+from federated.server.rate_limit import IdentityLimiter
 
 
 class MetricsTests(unittest.TestCase):
@@ -15,6 +16,7 @@ class MetricsTests(unittest.TestCase):
         handler.connection = Mock()
         handler.connection.getpeercert.return_value = {"subjectAltName": [("URI", uri)]}
         handler.server = SimpleNamespace(metrics=Metrics(), admission=Coordinator({"a": "east"}, min_clients=1), nodes={"a"})
+        handler.server.limiter = IdentityLimiter([("node", "a"), ("monitor", "metrics")])
         handler.send_response, handler.send_header, handler.end_headers = Mock(), Mock(), Mock()
         handler.wfile = io.BytesIO()
         return handler

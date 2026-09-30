@@ -15,6 +15,7 @@ class Metrics:
         self.started = time.time()
         self.accepted = 0
         self.rejected = 0
+        self.rate_limited = 0
         self.rounds = 0
         self.insufficient = 0
         self.last_closed = 0
@@ -32,6 +33,7 @@ class Metrics:
             "process_start_time_seconds": ("gauge", self.started),
             "updates_accepted_total": ("counter", self.accepted),
             "updates_rejected_total": ("counter", self.rejected),
+            "requests_rate_limited_total": ("counter", self.rate_limited),
             "rounds_closed_total": ("counter", self.rounds),
             "rounds_insufficient_total": ("counter", self.insufficient),
             "last_round_closed_timestamp_seconds": ("gauge", self.last_closed),

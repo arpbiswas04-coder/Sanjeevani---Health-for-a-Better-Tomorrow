@@ -85,7 +85,8 @@ multiple service instances against the same checkpoint.
 This is a sequential private-development server, not an internet-facing
 production deployment. Five-second socket inactivity timeouts bound individual
 stalls but do not provide absolute request deadlines; slow requests can delay
-round closing. Rate limiting, robust concurrency, certificate revocation/rotation,
+round closing. [Per-identity rate limiting](federated-rate-limits.md) is now implemented;
+proxy-level connection controls, robust concurrency, certificate revocation/rotation,
 secret-manager integration and deployment monitoring remain pending. HMAC and TLS
 do not prevent poisoning by an authorized node or provide differential privacy.
 

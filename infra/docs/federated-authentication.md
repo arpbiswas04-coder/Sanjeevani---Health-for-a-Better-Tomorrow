@@ -54,7 +54,8 @@ now uses it for HTTPS requests; no deployment has been performed. The existing l
 and subprocess demos continue to use their original unauthenticated coordinator;
 they do not automatically gain protection from this module. The HTTPS service adds
 certificate verification, endpoint identity checks and body limits before buffering.
-Rate limits and secret-manager integration remain to be built.
+The service now also enforces [per-identity rate limits](federated-rate-limits.md).
+Secret-manager integration remains to be built.
 
 HMAC does not encrypt parameters. The coordinator also possesses signing keys;
 this is not non-repudiation. Authorized malicious nodes can still submit poisoned
