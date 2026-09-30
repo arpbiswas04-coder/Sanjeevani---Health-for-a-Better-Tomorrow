@@ -18,6 +18,8 @@ import { UnauthorizedPage } from '@/pages/UnauthorizedPage';
 // Auth Pages
 import { LoginPage } from '@/modules/auth/LoginPage';
 import { RegisterPage } from '@/modules/auth/RegisterPage';
+import { MFAPage } from '@/modules/auth/MFAPage';
+import { ForgotPasswordPage } from '@/modules/auth/ForgotPasswordPage';
 import { ProfilePage } from '@/modules/auth/ProfilePage';
 import { SettingsPage } from '@/modules/auth/SettingsPage';
 
@@ -34,6 +36,7 @@ import { InteractiveResourceMap } from '@/modules/map/InteractiveResourceMap';
 import { InventoryPage } from '@/modules/inventory/InventoryPage';
 import { BedsPage } from '@/modules/beds/BedsPage';
 import { FacilitiesPage } from '@/modules/facilities/FacilitiesPage';
+import { WarehouseDashboardPage } from '@/modules/facilities/WarehouseDashboardPage';
 import { WorkforcePage } from '@/modules/workforce/WorkforcePage';
 import { PatientsPage } from '@/modules/patients/PatientsPage';
 import { DiseasePage } from '@/modules/disease/DiseasePage';
@@ -62,6 +65,14 @@ export const router = createBrowserRouter([
   {
     path: '/register',
     element: <RegisterPage />,
+  },
+  {
+    path: '/mfa',
+    element: <MFAPage />,
+  },
+  {
+    path: '/forgot-password',
+    element: <ForgotPasswordPage />,
   },
   {
     path: '/unauthorized',
@@ -111,7 +122,7 @@ export const router = createBrowserRouter([
       { path: 'district-comparison', element: <RegionalDashboard /> },
       { path: 'facilities', element: <FacilitiesPage /> },
       { path: 'inventory', element: <InventoryPage /> },
-      { path: 'warehouses', element: <FacilitiesPage /> },
+      { path: 'warehouses', element: <WarehouseDashboardPage /> },
       { path: 'beds', element: <BedsPage /> },
       { path: 'workforce', element: <WorkforcePage /> },
       { path: 'patients', element: <PatientsPage /> },
@@ -208,6 +219,7 @@ export const router = createBrowserRouter([
     children: [
       { path: 'map', element: <InteractiveResourceMap /> },
       { path: 'facilities', element: <FacilitiesPage /> },
+      { path: 'warehouses', element: <WarehouseDashboardPage /> },
       { path: 'inventory', element: <InventoryPage /> },
       { path: 'expiry', element: <InventoryPage /> },
       { path: 'beds', element: <BedsPage /> },

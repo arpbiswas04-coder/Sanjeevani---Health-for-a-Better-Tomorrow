@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { useAuthStore } from '@/store/authStore';
+import { useToast } from '@/hooks/useToast';
 import { Link } from 'react-router-dom';
 import {
   Building2,
@@ -14,12 +15,53 @@ import {
   AlertTriangle,
   ShieldCheck,
   CheckCircle2,
+  Download,
+  Filter,
+  RefreshCw,
 } from 'lucide-react';
+import {
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  Tooltip,
+  ResponsiveContainer,
+  CartesianGrid,
+  Legend,
+} from 'recharts';
 
 export const FacilityDashboardPage: React.FC = () => {
   const { user } = useAuthStore();
   const facilityName = user?.facilityName || 'Dr. RML Hospital, Lucknow';
   const districtName = user?.district || 'Lucknow';
+  const [selectedWard, setSelectedWard] = useState<string>('All');
+  const [lastUpdated, setLastUpdated] = useState<string>('Just now');
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const toast = useToast();
+
+  const wards = ['All', 'Emergency ICU', 'Cardiac Care Unit (CCU)', 'Pediatric Ward', 'General Medicine', 'Surgical Ward'];
+
+  const hourlyFlowData = [
+    { hour: '06:00', admissions: 12, discharges: 4 },
+    { hour: '09:00', admissions: 34, discharges: 18 },
+    { hour: '12:00', admissions: 52, discharges: 31 },
+    { hour: '15:00', admissions: 38, discharges: 24 },
+    { hour: '18:00', admissions: 29, discharges: 15 },
+    { hour: '21:00', admissions: 19, discharges: 8 },
+  ];
+
+  const handleRefresh = () => {
+    setIsRefreshing(true);
+    setTimeout(() => {
+      setIsRefreshing(false);
+      setLastUpdated(new Date().toLocaleTimeString());
+      toast.success('Hospital Telemetry Refreshed', `Census synchronized for ${facilityName}.`);
+    }, 600);
+  };
+
+  const handleExport = () => {
+    toast.success('Facility Report Exported', `Generated operational shift handover briefing for ${facilityName}.`);
+  };
 
   return (
     <div className="space-y-6 animate-in fade-in duration-200">
@@ -41,7 +83,29 @@ export const FacilityDashboardPage: React.FC = () => {
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-800 text-xs text-slate-400">
+            <Clock className="w-3.5 h-3.5 text-slate-500" />
+            <span>Updated: <strong className="text-slate-200 font-mono">{lastUpdated}</strong></span>
+          </div>
+
+          <button
+            onClick={handleRefresh}
+            disabled={isRefreshing}
+            className="p-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-800 transition-colors"
+            title="Refresh Census"
+          >
+            <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin text-purple-400' : ''}`} />
+          </button>
+
+          <button
+            onClick={handleExport}
+            className="inline-flex items-center gap-1.5 px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl text-xs font-semibold border border-slate-700 transition-colors"
+          >
+            <Download className="w-3.5 h-3.5" />
+            <span>Export Handover</span>
+          </button>
+
           <Link
             to="/facility/stock"
             className="flex items-center gap-1.5 px-3 py-2 bg-emerald-500 hover:bg-emerald-400 text-slate-950 rounded-xl text-xs font-bold transition-colors shadow-sm shadow-emerald-500/20"
@@ -59,6 +123,26 @@ export const FacilityDashboardPage: React.FC = () => {
         </div>
       </div>
 
+      {/* Ward Filter Bar */}
+      <Card className="p-3.5 bg-slate-900/90 border-slate-800 flex flex-wrap items-center justify-between gap-3">
+        <div className="flex items-center gap-2">
+          <Filter className="w-3.5 h-3.5 text-slate-400" />
+          <span className="text-xs text-slate-400 font-medium">Select Ward / Department:</span>
+          <select
+            value={selectedWard}
+            onChange={(e) => setSelectedWard(e.target.value)}
+            className="bg-slate-950 border border-slate-700 text-xs text-slate-200 rounded-xl px-2.5 py-1.5 focus:outline-none"
+          >
+            {wards.map((w) => (
+              <option key={w} value={w}>{w}</option>
+            ))}
+          </select>
+        </div>
+        <div className="text-xs text-slate-400">
+          Showing: <strong className="text-slate-100">{selectedWard === 'All' ? 'All Inpatient Wards' : selectedWard}</strong>
+        </div>
+      </Card>
+
       {/* Facility Operations KPIs */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card className="p-4 bg-slate-900 border-slate-800 space-y-2">
@@ -72,94 +156,86 @@ export const FacilityDashboardPage: React.FC = () => {
 
         <Card className="p-4 bg-slate-900 border-slate-800 space-y-2">
           <div className="flex items-center justify-between text-slate-400 text-xs">
-            <span>On-Hand Drug Inventory</span>
+            <span>Essential Medicines</span>
             <Package className="w-4 h-4 text-amber-400" />
           </div>
-          <div className="text-2xl font-black font-mono text-slate-100">4,820 Units</div>
-          <div className="text-[11px] text-rose-300">1 Critical Batch Expiring</div>
+          <div className="text-2xl font-black font-mono text-amber-400">91% Ready</div>
+          <div className="text-[11px] text-slate-400">2 Items at Reorder Threshold</div>
         </Card>
 
         <Card className="p-4 bg-slate-900 border-slate-800 space-y-2">
           <div className="flex items-center justify-between text-slate-400 text-xs">
-            <span>Staff Attendance Today</span>
-            <Users className="w-4 h-4 text-emerald-400" />
-          </div>
-          <div className="text-2xl font-black font-mono text-slate-100">92.4%</div>
-          <div className="text-[11px] text-emerald-400">18 Doctors, 42 Nurses Active</div>
-        </Card>
-
-        <Card className="p-4 bg-slate-900 border-slate-800 space-y-2">
-          <div className="flex items-center justify-between text-slate-400 text-xs">
-            <span>Biomedical Uptime</span>
+            <span>Medical Equipment Health</span>
             <Wrench className="w-4 h-4 text-cyan-400" />
           </div>
-          <div className="text-2xl font-black font-mono text-slate-100">96.8%</div>
-          <div className="text-[11px] text-slate-400">PSA Oxygen Plant Online</div>
+          <div className="text-2xl font-black font-mono text-emerald-400">98.2% Up</div>
+          <div className="text-[11px] text-slate-400">1 Defibrillator in Maintenance</div>
+        </Card>
+
+        <Card className="p-4 bg-slate-900 border-slate-800 space-y-2">
+          <div className="flex items-center justify-between text-slate-400 text-xs">
+            <span>Shift Staffing Roster</span>
+            <Users className="w-4 h-4 text-pink-400" />
+          </div>
+          <div className="text-2xl font-black font-mono text-slate-100">42 On Duty</div>
+          <div className="text-[11px] text-slate-400">Doctor-Patient 1:18 (Manageable)</div>
         </Card>
       </div>
 
-      {/* Facility Quick Operations */}
+      {/* Facility Alert Section */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <Card className="p-5 bg-slate-900 border-slate-800 space-y-3">
-          <div className="flex items-center justify-between">
-            <h3 className="text-sm font-bold text-slate-100 flex items-center gap-2">
-              <Package className="w-4 h-4 text-amber-400" />
-              Critical Stock Expiry & Shortages
-            </h3>
-            <Link to="/facility/expiry" className="text-xs text-emerald-400 hover:underline">
-              View All FEFO Batches →
-            </Link>
+        <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-start gap-3">
+          <AlertTriangle className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
+          <div>
+            <div className="text-xs font-bold text-amber-300">Oxygen Buffer At 9 Hours Capacity</div>
+            <p className="text-[11px] text-slate-400 mt-0.5">
+              Cylinder manifold buffer is at 9 hours of emergency reserves. Refill truck ETA: 2.5 hours.
+            </p>
           </div>
-          <div className="space-y-2 text-xs">
-            <div className="p-3 rounded-xl bg-slate-950/60 border border-slate-800 flex justify-between items-center">
-              <div>
-                <div className="font-bold text-slate-100">Insulin Human Regular (100 IU/mL)</div>
-                <div className="text-[10px] text-slate-400">Batch: INS-8841-A • 120 vials on hand</div>
-              </div>
-              <Badge level="critical">19 Days Left</Badge>
-            </div>
-            <div className="p-3 rounded-xl bg-slate-950/60 border border-slate-800 flex justify-between items-center">
-              <div>
-                <div className="font-bold text-slate-100">Medical Oxygen (Type-D 47L)</div>
-                <div className="text-[10px] text-slate-400">Pressure: 4.8 bar • 45 Cylinders</div>
-              </div>
-              <Badge level="high">4.8 Days Supply</Badge>
-            </div>
-          </div>
-        </Card>
+        </div>
 
-        <Card className="p-5 bg-slate-900 border-slate-800 space-y-3">
-          <div className="flex items-center justify-between">
-            <h3 className="text-sm font-bold text-slate-100 flex items-center gap-2">
-              <Truck className="w-4 h-4 text-emerald-400" />
-              Assigned Ambulance Fleet
-            </h3>
-            <Link to="/facility/ambulance" className="text-xs text-emerald-400 hover:underline">
-              Manage Fleet →
-            </Link>
+        <div className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-start gap-3">
+          <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0 mt-0.5" />
+          <div>
+            <div className="text-xs font-bold text-emerald-300">Biomedical Equipment Calibrated</div>
+            <p className="text-[11px] text-slate-400 mt-0.5">
+              All 14 ICU ventilators and neonatal incubators passed automated self-diagnostics.
+            </p>
           </div>
-          <div className="space-y-2 text-xs">
-            <div className="p-3 rounded-xl bg-slate-950/60 border border-slate-800 flex justify-between items-center">
-              <div>
-                <div className="font-bold text-slate-100">Sanjeevani Fleet ALS-01</div>
-                <div className="text-[10px] text-slate-400">Advanced Life Support • O2 98%</div>
-              </div>
-              <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                Standby Ready
-              </span>
-            </div>
-            <div className="p-3 rounded-xl bg-slate-950/60 border border-slate-800 flex justify-between items-center">
-              <div>
-                <div className="font-bold text-slate-100">Rapid Response BLS-09</div>
-                <div className="text-[10px] text-slate-400">Basic Life Support • En Route</div>
-              </div>
-              <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20">
-                ETA 11 min
-              </span>
-            </div>
-          </div>
-        </Card>
+        </div>
       </div>
+
+      {/* Hourly Admission vs Discharge Curve */}
+      <Card className="space-y-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className="text-sm font-bold text-slate-100">Today's Patient Census Flow Dynamics</h3>
+            <p className="text-[11px] text-slate-400">Hourly Admissions vs Discharges across all active wards</p>
+          </div>
+          <span className="text-xs font-mono text-purple-400">Live Telemetry</span>
+        </div>
+
+        <div className="h-60 w-full">
+          <ResponsiveContainer width="100%" height="100%">
+            <AreaChart data={hourlyFlowData}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
+              <XAxis dataKey="hour" stroke="#64748b" tick={{ fontSize: 11 }} />
+              <YAxis stroke="#64748b" tick={{ fontSize: 11 }} />
+              <Tooltip
+                contentStyle={{
+                  backgroundColor: '#0f172a',
+                  borderColor: '#334155',
+                  borderRadius: '8px',
+                  fontSize: '12px',
+                }}
+              />
+              <Legend wrapperStyle={{ fontSize: '11px', paddingTop: '8px' }} />
+              <Area type="monotone" dataKey="admissions" stroke="#a855f7" fill="#a855f7" fillOpacity={0.2} name="Admissions" />
+              <Area type="monotone" dataKey="discharges" stroke="#10b981" fill="#10b981" fillOpacity={0.2} name="Discharges" />
+            </AreaChart>
+          </ResponsiveContainer>
+        </div>
+      </Card>
     </div>
   );
 };

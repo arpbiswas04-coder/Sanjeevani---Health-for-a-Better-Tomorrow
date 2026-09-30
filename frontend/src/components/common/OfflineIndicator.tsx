@@ -6,22 +6,27 @@ export const OfflineIndicator: React.FC = () => {
   const [isOnline, setIsOnline] = useState<boolean>(
     typeof navigator !== 'undefined' ? navigator.onLine : true
   );
-  const [queueCount, setQueueCount] = useState<number>(0);
+  const [queueCount, setQueueCount] = useState<number>(() => offlineStorage.getQueue().length);
 
   useEffect(() => {
     const handleOnline = () => setIsOnline(true);
     const handleOffline = () => setIsOnline(false);
+    const handleQueueUpdate = (e: any) => {
+      setQueueCount(typeof e.detail === 'number' ? e.detail : offlineStorage.getQueue().length);
+    };
 
     window.addEventListener('online', handleOnline);
     window.addEventListener('offline', handleOffline);
+    window.addEventListener('sanjeevani_queue_updated', handleQueueUpdate);
 
     const interval = setInterval(() => {
       setQueueCount(offlineStorage.getQueue().length);
-    }, 3000);
+    }, 2500);
 
     return () => {
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
+      window.removeEventListener('sanjeevani_queue_updated', handleQueueUpdate);
       clearInterval(interval);
     };
   }, []);
@@ -57,7 +62,7 @@ export const OfflineIndicator: React.FC = () => {
                   offlineStorage.clearQueue();
                   setQueueCount(0);
                 }}
-                className="px-2 py-0.5 bg-white text-slate-900 rounded font-bold hover:bg-slate-100 flex items-center gap-1 text-[11px]"
+                className="px-2 py-0.5 bg-white text-slate-900 rounded font-bold hover:bg-slate-100 flex items-center gap-1 text-[11px] transition-colors"
               >
                 <RefreshCw className="w-3 h-3" />
                 Sync Now
@@ -69,3 +74,5 @@ export const OfflineIndicator: React.FC = () => {
     </div>
   );
 };
+
+export default OfflineIndicator;
