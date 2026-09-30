@@ -34,9 +34,9 @@ def readiness():
             "required_remaining": ["Integrate and audit reference privacy mechanisms for real training",
                                    "Authenticated secure aggregation with dropout/collusion handling",
                                    "Member 2 live APIs/approval integration and Member 3 model/data integration",
-                                   "Full application Docker deployment and runtime verification",
+                                   "Real business API/model integration beyond verified local Docker scaffolds",
                                    "Activate and execute reviewed CI/security checks",
-                                   "Execute PostgreSQL restore drill; add object-storage/off-host recovery"]}
+                                   "Real application data recovery beyond passed synthetic PostgreSQL drill; object-storage/off-host recovery"]}
 
 
 def main():

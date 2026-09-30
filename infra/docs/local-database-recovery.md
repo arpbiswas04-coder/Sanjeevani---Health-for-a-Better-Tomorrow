@@ -19,6 +19,19 @@ From `infra/`:
 .\.venv-federated\Scripts\python.exe security/postgres_recovery.py restore-drill --user sanjeevani --key-file federated/secrets/local-dev/backup.key --file outputs/backups/postgres-001.enc
 ```
 
+For the local team Compose stack, add `--compose` to either command. The helper
+uses matching-version tools inside `app-postgres`, connects over its local trusted
+socket, and streams the dump through Docker stdin/stdout. Host PostgreSQL tools
+and host `PGPASSFILE` are unnecessary for this mode; protect access to Docker.
+Never enable trusted connections on externally exposed database interfaces.
+`deployment/prepare_demo_secrets.py` creates a missing dedicated backup key.
+
+Run a repeatable isolated synthetic drill with:
+
+```powershell
+.\.venv-federated\Scripts\python.exe deployment/recovery_drill.py
+```
+
 The tool always connects to 127.0.0.1, with configurable `--port`. Dumps must be at
 most 64 MiB for this small demo utility. Encryption uses bounded whole-file Fernet;
 larger deployments need a streaming backup product. Dump creation can temporarily
@@ -33,7 +46,8 @@ counts, constraints, migrations, permissions and application startup in the new
 database. Roles, object-store files, credentials and deployment configuration are
 not included. Schedule off-host copies and independent key recovery separately.
 
-PostgreSQL tools/server and Docker are unavailable on the current host. The script
-was syntax checked but **no database backup or restore drill has been executed**.
-Do not mark the database recovery requirement complete until the drill and data
-checks succeed on your Docker-capable machine.
+A real container-based synthetic drill passed on September 30, including restored
+row values and primary-key/check constraints; report location is in the
+[local acceptance record](local-demo-acceptance.md). This validates the helper on
+PostgreSQL 16. It does not validate missing application tables, migrations, roles,
+object storage or off-host disaster recovery.

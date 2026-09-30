@@ -11,7 +11,7 @@ dependencies = []
 
 [project.optional-dependencies]
 transport = ["ortools==9.15.6755"]
-federation = ["flwr==1.22.0", "torch==2.9.0"]
+federation = ["flwr==1.39.0", "torch==2.14.0", "protobuf==6.33.5", "cryptography==46.0.7", "click==8.5.0"]
 
 [project.scripts]
 sanjeevani-redistribute = "optimization.redistribution.cli:main"

@@ -11,10 +11,10 @@ signature-verified Docker Inc installer. Docker CLI 29.8.1 and Compose v5.5.1
 responded successfully. WSL installation succeeded, and enabling Windows Virtual
 Machine Platform returned 3010 (restart required). Restart Windows, open Docker
 Desktop, complete its first-launch prompts, and check `docker info` before startup.
-No container build or deployment has been verified yet.
-The pre-restart processor query reported firmware virtualization disabled and
-Docker engine info failed. Recheck after restarting; if WSL still reports disabled
-virtualization, enable Intel VT-x/AMD SVM in BIOS/UEFI before retrying.
+Subsequent startup succeeded: the engine, team scaffold containers and monitoring
+ran on September 30. The processor query reported virtualization disabled, but
+the running Docker engine is the runtime evidence. If a future WSL start fails,
+follow its diagnostic instructions rather than assuming another reboot is needed.
 Use the official [Docker Desktop Windows installation guide](https://docs.docker.com/desktop/setup/install/windows-install/).
 
 From `infra/`, provision an unexpired local credential bundle if absent, and generate
@@ -23,6 +23,7 @@ the new team's Compose environment once:
 ```powershell
 .\.venv-federated\Scripts\python.exe -m federated.local provision
 .\.venv\Scripts\python.exe deployment/prepare_local_env.py
+.\.venv-federated\Scripts\python.exe deployment/prepare_demo_secrets.py
 ```
 
 Both refuse to overwrite existing files. `prepare_local_env.py` writes random
@@ -64,7 +65,9 @@ execution policy just for this helper.
 ## Add monitoring and demo clients
 
 Follow [monitoring](federated-monitoring.md) and [Grafana](federated-grafana.md) for
-the monitor certificate and password file. Then use all files consistently:
+the monitor certificate and password file. The generated local Grafana password
+is stored in `federated/secrets/local-dev/grafana-admin-password`; read it privately
+for login. Never paste it into a commit or shared report. Use all files consistently:
 
 ```powershell
 docker compose -f compose.yaml -f compose.team.yaml -f compose.monitoring.yaml -f compose.grafana.yaml up --build -d --wait
@@ -87,6 +90,22 @@ Stop with the same `-f` arguments and `down`, without `--volumes`, to preserve
 database/Redis/model state. Grafana and Prometheus memory-only data disappear as
 documented. No command here automatically deletes a persistent volume.
 
-The combined four-file configuration passed `docker compose config --quiet`.
-Static Compose/Python checks are not runtime evidence: Docker build/startup,
-PostgreSQL restore and monitoring rendering are still pending on a prepared host.
+## Record local acceptance
+
+```powershell
+.\.venv-federated\Scripts\python.exe deployment/verify_local.py --monitoring --grafana
+.\.venv-federated\Scripts\python.exe deployment/recovery_drill.py
+```
+
+The first command reads scaffold endpoints, authenticated metrics, missing-client-
+certificate rejection, Prometheus scrape status and the provisioned dashboard API.
+It records six checks in ignored `outputs/acceptance-*.json`. Dashboard API validation
+does not constitute visual rendering inspection.
+The second creates an isolated synthetic PostgreSQL database, encrypts its dump,
+restores into a different new database, checks rows and primary-key/check constraints,
+and records `outputs/backups/drill-*/report.json`. Both databases remain for inspection.
+It does not modify the team database or validate real application migrations.
+
+All six endpoint checks and the synthetic PostgreSQL recovery drill passed on
+September 30. Three clients submitted three rounds and the server confirmed three
+aggregations. See [runtime evidence and remaining gates](local-demo-acceptance.md).

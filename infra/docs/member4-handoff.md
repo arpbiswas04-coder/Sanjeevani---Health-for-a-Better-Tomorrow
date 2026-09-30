@@ -32,8 +32,8 @@ clinical validation, production readiness or live cross-service integration.
 | Federation | FedAvg reference, optional PyTorch adapters, checkpoints and multi-round clients; [runner](federated-round-runner.md) |
 | Federation security | Mutual TLS, signed admission, replay protection and rate limits; [HTTPS](federated-https.md) |
 | Local credentials | Restricted directory and short-lived demo certificates; [setup](federated-local-setup.md) |
-| Container stack | Member 4 Compose configuration supplied; build/runtime not verified; [Docker](federated-docker.md) |
-| Monitoring | Certificate-protected metrics, Prometheus rules, Grafana dashboard; rendering/scraping not verified; [monitoring](federated-monitoring.md) |
+| Container stack | Team scaffolds and federation built/started locally; [acceptance](local-demo-acceptance.md) |
+| Monitoring | Authenticated metrics, successful scrape, validated rules and eight-panel dashboard API; visual inspection pending; [monitoring](federated-monitoring.md) |
 | Federation recovery | Encrypted backup and no-overwrite restore with focused recovery checks; [backup](federated-backup.md) |
 | CI/security | Inactive test, isolated federation integration, audit and image-scan template; [scanning](security-scanning.md) |
 
@@ -49,22 +49,23 @@ clinical validation, production readiness or live cross-service integration.
 3. **Member 3 integration:** proposed [team contracts](team-integration-contracts.md)
    and a freshness/context-checked forecast adapter are supplied. Teammates must
    accept the contracts and supply real APIs, artifacts and eligible local data.
-4. **Runtime acceptance:** install/use Docker on a suitable host, build images,
-   run the Member 4 stack, verify certificates/volume permissions, inspect actual
-   metrics/dashboard and then integrate the full team application stack.
+4. **Runtime acceptance:** local scaffolds and federation now run; six endpoint
+   checks, three aggregated training rounds and a synthetic real PostgreSQL restore
+   passed. Real business integration and visual dashboard inspection remain pending.
 5. **Active CI and deployment:** team places the reviewed template under root
    `.github/workflows/`, runs checks, addresses scanner findings and configures
-   branch protection/staging. No hosted workflow, image scan or deployment is
-   claimed to have run. Current actions/image versions still need release review.
+   branch protection/staging. Local dependency and image scans ran and found
+   vulnerabilities. Hosted CI, staging and production remain pending.
 6. **Disaster recovery:** encrypted local PostgreSQL backup and restore-to-new-DB
-   tooling is supplied; [guide](local-database-recovery.md). Only mocked command
-   checks passed. Actual restore, object-storage backups, off-host retention and
-   independently recoverable keys remain pending.
+   tooling is supplied; [guide](local-database-recovery.md). Real synthetic rows
+   and constraints survived an encrypted backup/restore in PostgreSQL 16. Real
+   application recovery, object storage, off-host retention and independent keys remain pending.
 
 The agreed immediate target is a [local Docker demo](local-stack-start.md).
 `compose.team.yaml` adds the existing backend/frontend scaffolds, PostgreSQL and
 Redis without editing teammates' files. Five focused privacy, forecast and mocked
-database-recovery checks passed; these do not verify container runtime behavior.
+database-recovery checks passed. Runtime evidence is recorded separately in
+[local acceptance](local-demo-acceptance.md).
 
 Other assignment items still need agreed scope: resilience orchestration,
 cross-country/BRICS federation, optional personalization and richer digital-twin

@@ -70,11 +70,10 @@ Stop with the same three files and omit `--volumes` to preserve model checkpoint
 docker compose -f compose.yaml -f compose.monitoring.yaml -f compose.grafana.yaml down
 ```
 
-YAML/JSON syntax, datasource references and panel IDs were checked locally. No
-tests, containers, image downloads or training were run for this configuration
-change. Docker is unavailable here, so startup and visual dashboard rendering
-remain unverified. Image tags are versioned but not digest-locked or vulnerability
-scanned; production release hardening remains separate work.
+On September 30 the container started, authenticated dashboard API returned its
+expected UID and eight panels, and the Prometheus federation scrape was healthy.
+Visual dashboard rendering remains uninspected. Image tags are versioned but not
+digest-locked; monitoring-image scans and production release hardening remain separate work.
 
 References: [Grafana file provisioning](https://grafana.com/docs/grafana/latest/administration/provisioning/)
 and [Docker configuration / file-based secrets](https://grafana.com/docs/grafana/latest/setup-grafana/configure-docker/).

@@ -13,9 +13,9 @@ ROOT = Path(__file__).resolve().parents[1]
 LIMIT = 64 * 1024 * 1024  # Bounded in-memory encryption: small local demo databases.
 
 
-def invoke(command, *, output=None):
+def invoke(command, *, output=None, input_data=None):
     subprocess.run(command, stdout=output if output is not None else subprocess.DEVNULL,
-                   stderr=subprocess.PIPE, check=True, timeout=180)
+                   input=input_data, stderr=subprocess.PIPE, check=True, timeout=180)
 
 
 def main():
@@ -24,6 +24,7 @@ def main():
     parser.add_argument("--database", help="Source database for backup only")
     parser.add_argument("--user", required=True)
     parser.add_argument("--port", type=int, default=5432)
+    parser.add_argument("--compose", action="store_true", help="Use client tools inside the local app-postgres container")
     parser.add_argument("--key-file", type=Path, required=True)
     parser.add_argument("--file", type=Path, required=True, help="Encrypted output/input")
     args = parser.parse_args()
@@ -31,8 +32,13 @@ def main():
         from cryptography.fernet import Fernet
         if not re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]{0,62}", args.user): raise ValueError("Invalid user")
         if not 1 <= args.port <= 65535: raise ValueError("Invalid port")
-        tools = ("pg_dump",) if args.action == "backup" else ("createdb", "pg_restore")
-        if any(shutil.which(tool) is None for tool in tools): raise ValueError("PostgreSQL client tools missing")
+        docker = shutil.which("docker")
+        if args.compose and not docker:
+            candidate = Path(os.environ.get("LOCALAPPDATA", "")) / "Programs/DockerDesktop/resources/bin/docker.exe"
+            if candidate.is_file(): docker = str(candidate)
+        tools = () if args.compose else (("pg_dump",) if args.action == "backup" else ("createdb", "pg_restore"))
+        if (args.compose and not docker) or any(shutil.which(tool) is None for tool in tools):
+            raise ValueError("Database/Docker tools missing")
         with args.key_file.open("rb") as stream: key = stream.read(129).strip()
         if len(key) != 44: raise ValueError("Invalid key")
         cipher = Fernet(key)
@@ -40,7 +46,13 @@ def main():
         staging_root = args.key_file.resolve().parent
         if not staging_root.is_relative_to(ROOT / "federated/secrets"):
             raise ValueError("Key/staging directory must be under infra/federated/secrets")
-        connection = ["--host", "127.0.0.1", "--port", str(args.port), "--username", args.user, "--no-password"]
+        connection = ["--username", args.user, "--no-password"]
+        if not args.compose:
+            connection[:0] = ["--host", "127.0.0.1", "--port", str(args.port)]
+        elif args.port != 5432:
+            raise ValueError("Compose uses the container's default PostgreSQL socket")
+        prefix = ([docker, "compose", "--project-directory", str(ROOT), "-f", str(ROOT / "compose.yaml"),
+                   "-f", str(ROOT / "compose.team.yaml"), "exec", "-T", "app-postgres"] if args.compose else [])
         with tempfile.TemporaryDirectory(prefix=".pg-drill-", dir=staging_root) as directory:
             dump = Path(directory) / "database.dump"
             if args.action == "backup":
@@ -49,7 +61,7 @@ def main():
                 if not target.resolve().is_relative_to(ROOT) or target.exists() or target.is_symlink():
                     raise ValueError("Output must be a new file inside infra")
                 with dump.open("xb") as stream:
-                    invoke(["pg_dump", *connection, "--format=custom", "--dbname", args.database], output=stream)
+                    invoke([*prefix, "pg_dump", *connection, "--format=custom", "--dbname", args.database], output=stream)
                 if dump.stat().st_size > LIMIT: raise ValueError("Dump exceeds 64 MiB demo limit")
                 encrypted = cipher.encrypt(dump.read_bytes())
                 target.parent.mkdir(parents=True, exist_ok=True)
@@ -67,12 +79,14 @@ def main():
                 content = cipher.decrypt(encrypted)
                 if len(content) > LIMIT or not content.startswith(b"PGDMP"): raise ValueError("Invalid PostgreSQL custom dump")
                 dump.write_bytes(content)
-                invoke(["pg_restore", "--list", str(dump)])
+                dump_input = {"input_data": content} if args.compose else {}
+                dump_path = [] if args.compose else [str(dump)]
+                invoke([*prefix, "pg_restore", "--list", *dump_path], **dump_input)
                 database = "member4_restore_" + secrets.token_hex(8)
-                invoke(["createdb", *connection, "--template=template0", database])
+                invoke([*prefix, "createdb", *connection, "--template=template0", database])
                 try:
-                    invoke(["pg_restore", *connection, "--exit-on-error", "--single-transaction", "--no-owner",
-                            "--no-privileges", "--dbname", database, str(dump)])
+                    invoke([*prefix, "pg_restore", *connection, "--exit-on-error", "--single-transaction", "--no-owner",
+                            "--no-privileges", "--dbname", database, *dump_path], **dump_input)
                 except (OSError, subprocess.SubprocessError):
                     print(json.dumps({"status": "restore_failed", "inspection_database": database}))
                     return 2
