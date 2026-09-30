@@ -39,6 +39,10 @@ def _solve(cp, model, seconds):
     return solver, solver.solve(model)
 
 
+from optimization.common.telemetry import measured
+
+
+@measured("optimizer", "workforce")
 def recommend_staff(request, *, max_age_seconds=300, time_limit_seconds=5, now=None):
     """Maximize filled staff positions, then minimize round-trip travel minutes.
 

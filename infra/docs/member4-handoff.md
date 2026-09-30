@@ -40,7 +40,7 @@ clinical validation, production readiness or live cross-service integration.
 ## Mandatory unfinished work — do not mark complete
 
 1. **Privacy:** a separate synthetic reference now implements clipping, Gaussian
-   noise, session accounting, utility comparison and fixed-roster pairwise masked
+   noise, durable optional accounting, utility comparison and fixed-roster pairwise masked
    aggregation. See [privacy limitations](federated-privacy.md). It is not wired
    into HTTPS training, audited, dropout-tolerant or approved for real health data.
 2. **Member 2 integration:** actual authorized APIs, recommendation persistence,
@@ -49,7 +49,7 @@ clinical validation, production readiness or live cross-service integration.
 3. **Member 3 integration:** proposed [team contracts](team-integration-contracts.md)
    and a freshness/context-checked forecast adapter are supplied. Teammates must
    accept the contracts and supply real APIs, artifacts and eligible local data.
-4. **Runtime acceptance:** local scaffolds and federation now run; six endpoint
+4. **Runtime acceptance:** local scaffolds and federation now run; ten endpoint
    checks, three aggregated training rounds and a synthetic real PostgreSQL restore
    passed. Real business integration and visual dashboard inspection remain pending.
 5. **Active CI and deployment:** team places the reviewed template under root
@@ -67,7 +67,7 @@ Redis without editing teammates' files. Five focused privacy, forecast and mocke
 database-recovery checks passed. Runtime evidence is recorded separately in
 [local acceptance](local-demo-acceptance.md).
 
-Other assignment items still need agreed scope: resilience orchestration,
+Other assignment items still need agreed scope beyond the implemented synthetic resilience score:
 cross-country/BRICS federation, optional personalization and richer digital-twin
 behavior (multiple active batches, destination storage and travel delays).
 
@@ -92,3 +92,12 @@ replacement. Runtime and synthetic restore passed. Remaining: cryptography/base
 security findings, real Member 2/3 integrations, root CI activation, cloud/receiver/
 off-host credentials, real-data privacy review and visual dashboard inspection
 blocked by the computer-use URL guard. No production-ready claim is made.
+
+## Application monitoring completion
+
+Use `deployment/start-local.ps1 -Observability -Grafana` from infra; this includes
+the team and monitoring overlays. Ten checks passed after backend hardening in
+`outputs/acceptance-dsxvfzyi.json`. Six alert rules validate; backend UID is 1000.
+See [application monitoring](application-monitoring.md), [operations](operations-completion.md)
+and [deployment handoff](deployment-handoff.md). Prediction/optimizer panels require
+real same-process integration; API checks do not verify visual rendering.

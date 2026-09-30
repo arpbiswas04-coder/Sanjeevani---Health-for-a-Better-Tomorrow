@@ -5,15 +5,17 @@ WORKDIR /app
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    curl \
-    libpq-dev \
-    && rm -rf /var/lib/apt/lists/*
+# psycopg2-binary bundles its client library; health probes use Python urllib.
+# No compiler headers or curl are required by the current runtime.
+RUN apt-get update && apt-get upgrade -y && rm -rf /var/lib/apt/lists/*
 
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
+
+RUN useradd --uid 1000 --create-home member4
+USER member4
 
 EXPOSE 8000
 

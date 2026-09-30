@@ -22,6 +22,10 @@ SCHEMA_VERSION = "1.0"
 ALGORITHM_VERSION = "linear-cost-v1"
 
 
+from optimization.common.telemetry import measured
+
+
+@measured("optimizer", "redistribution")
 def recommend(
     request: dict[str, Any], policy: dict[str, Any] | None = None
 ) -> dict[str, Any]:

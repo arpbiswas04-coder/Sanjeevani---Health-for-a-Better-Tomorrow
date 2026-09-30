@@ -43,6 +43,10 @@ def _solve(routing, parameters):
     return routing.SolveWithParameters(parameters)
 
 
+from optimization.common.telemetry import measured
+
+
+@measured("optimizer", "routing")
 def recommend_routes(request, *, time_limit_seconds=3):
     """Route unsplittable deliveries from one depot, returning to that depot.
 

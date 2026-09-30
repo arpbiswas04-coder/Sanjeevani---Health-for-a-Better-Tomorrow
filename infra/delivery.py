@@ -3,6 +3,7 @@ import argparse
 from datetime import datetime, timezone
 import importlib.util
 import json
+import os
 from pathlib import Path
 import shutil
 import subprocess
@@ -24,10 +25,19 @@ DEMOS = {
 }
 
 
+def docker_available():
+    try:
+        return shutil.which("docker") is not None or (
+            Path(os.environ.get("LOCALAPPDATA", "")) /
+            "Programs/DockerDesktop/resources/bin/docker.exe").is_file()
+    except OSError:
+        return None  # Sandbox access denial is unknown, not a missing installation.
+
+
 def readiness():
     return {"python": sys.version.split()[0],
             "optimizer_dependency_available": importlib.util.find_spec("ortools") is not None,
-            "docker_cli_available": shutil.which("docker") is not None,
+            "docker_cli_available": docker_available(),
             "federation_environment_present": (ROOT / ".venv-federated/Scripts/python.exe").exists() or (ROOT / ".venv-federated/bin/python").exists(),
             "ci_template_present": (ROOT / "ci-cd/member4-ci.yml").is_file(),
             "scope": "Local prerequisite inventory only; does not verify Docker daemon, credentials or deployed services",

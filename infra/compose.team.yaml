@@ -29,11 +29,27 @@ services:
       retries: 10
     restart: 'no'
   app-backend:
+    command: [uvicorn, instrumented:app, --host, '0.0.0.0', --port, '8000', --no-access-log]
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    tmpfs: [/tmp]
+    volumes:
+      - ./monitoring/runtime:/opt/member4-runtime:ro
+      - ./optimization:/opt/member4-library/optimization:ro
+      - type: bind
+        source: ./federated/secrets/local-dev/metrics-token
+        target: /run/secrets/metrics-token
+        read_only: true
+        bind:
+          create_host_path: false
     build:
       context: ../backend
       dockerfile: ../infra/docker/Dockerfile.backend
     environment:
       APP_ENV: development
+      PYTHONPATH: /opt/member4-runtime:/opt/member4-library:/app
+      MEMBER4_METRICS_TOKEN_FILE: /run/secrets/metrics-token
       POSTGRES_DB: sanjeevani
       POSTGRES_USER: sanjeevani
       POSTGRES_PASSWORD: '${MEMBER4_DB_PASSWORD:?Set MEMBER4_DB_PASSWORD}'

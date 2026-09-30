@@ -21,11 +21,19 @@ def main():
     root.mkdir(parents=True, exist_ok=True)
     directory = Path(tempfile.mkdtemp(prefix="scheduled-", dir=root))
     archive = directory / "postgres.enc"
-    result = subprocess.run([sys.executable, str(ROOT / "security/postgres_recovery.py"), "backup", "--compose",
-                             "--database", args.database, "--user", "sanjeevani", "--key-file",
-                             str(ROOT / "federated/secrets/local-dev/backup.key"), "--file", str(archive)],
-                            capture_output=True, text=True, timeout=240)
+    try:
+        result = subprocess.run([sys.executable, str(ROOT / "security/postgres_recovery.py"), "backup", "--compose",
+                                 "--database", args.database, "--user", "sanjeevani", "--key-file",
+                                 str(ROOT / "federated/secrets/local-dev/backup.key"), "--file", str(archive)],
+                                capture_output=True, text=True, timeout=240)
+    except (OSError, subprocess.SubprocessError):
+        (directory / "failure.json").write_text(json.dumps({"status": "backup_failed",
+            "reason": "execution_failed_or_timed_out", "created_at": datetime.now(timezone.utc).isoformat()}), encoding="utf-8")
+        return 2
     if result.returncode:
+        (directory / "failure.json").write_text(json.dumps({"status": "backup_failed",
+            "reason": "backup_command_failed", "exit_code": result.returncode,
+            "created_at": datetime.now(timezone.utc).isoformat()}), encoding="utf-8")
         print(json.dumps({"status":"backup_failed", "job_directory":str(directory)}))
         return 2
     report = {"status":"backup_created", "created_at":datetime.now(timezone.utc).isoformat(),

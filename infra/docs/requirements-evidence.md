@@ -18,13 +18,21 @@ Verified means the stated local scope has evidence, not production certification
 | Resilience orchestration 67 | Verified synthetic contract | Transparent synthetic scenario-service score, separately versioned policy; no clinical validation |
 | Ambulance 88 / routing 89 | Verified locally | Eligibility/ETA ranking and OR-Tools routing; live fleet/maps and dispatch belong to integration owners |
 | Docker/local startup | Verified locally | Seven persistent services started; six endpoint/monitoring checks passed; no need to add unused Celery/MLflow solely from recommended topology |
-| CI/CD | Implemented but inactive | `ci-cd/member4-ci.yml`; activation in root `.github/workflows/` blocked by infra-only scope; cloud target/credentials absent |
+| CI/CD | Expanded template; implemented but inactive | `ci-cd/member4-ci.yml`; activation in root `.github/workflows/` blocked by infra-only scope; cloud target/credentials absent |
 | Security / zero trust 100–101 | Partial, release blocked | mTLS, HMAC/replay/rate controls, local secret ACLs; application RBAC belongs to Member 2; unresolved image/crypto findings documented |
-| Backup/recovery 102 | Verified synthetic recovery; operations prepared | PostgreSQL encrypted dump/restore matched rows/constraints; real application data, off-host destination and independent key custody pending |
-| Monitoring 103 | API/scrape verified; visual check blocked | Six checks + promtool rules passed; browser URL safety guard stopped visual inspection; alert receiver not supplied |
+| Backup/recovery 102 | Verified synthetic recovery; operations prepared | PostgreSQL encrypted dump/restore matched rows/constraints; ten config files encrypted/restored. Mounted-destination checksum interface tested locally; real application data, off-host destination and independent key custody pending |
+| Monitoring 103 | Verified local HTTP/dependencies/federation; integration blocked | Ten acceptance checks and six alert rules passed; application dashboard added. Optimizer/prediction need same-process calls; Celery absent. Visual rendering and alert delivery remain unverified |
 | Production/cloud deployment | Blocked by target/credentials and security gates | No deployment claimed; local target was explicitly selected |
 
 Acceptance paths: `docs/local-demo-acceptance.md`, `outputs/acceptance-ql08940l.json`,
 `outputs/backups/drill-0j4yt0nw/report.json`, `outputs/security/`.
 Thirty federation checks passed following prior dependency upgrades. New changes
 receive focused checks recorded in the completion evidence rather than rerunning unrelated optimizers.
+
+## October 1 local-only release update
+
+Local alert firing/resolution and encrypted backup copy/decryption are verified.
+The new Alertmanager gRPC finding was fixed and its HIGH/CRITICAL rescan passed.
+Existing backend/federation security blockers remain. Hosted CI stays inactive
+under the explicitly reconfirmed infra-only restriction. Cloud/off-host services
+were excluded by the selected local-only target. See local-release-status.md.

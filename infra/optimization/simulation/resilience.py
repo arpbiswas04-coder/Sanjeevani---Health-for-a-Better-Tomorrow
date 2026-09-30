@@ -7,6 +7,10 @@ from optimization.common.validation import ValidationError, identifier, nonnegat
 from optimization.simulation.comparison import compare_timelines
 
 
+from optimization.common.telemetry import measured
+
+
+@measured("optimizer", "resilience")
 def assess_resilience(comparison, policy):
     policy = object_fields(policy, required={"version", "scenario_weights"}, optional=set(), path="resilience policy")
     version = identifier(policy["version"], "policy version")

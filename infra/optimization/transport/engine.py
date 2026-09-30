@@ -31,6 +31,10 @@ def _solve(cp, model, seconds):
     return solver, solver.solve(model)
 
 
+from optimization.common.telemetry import measured
+
+
+@measured("optimizer", "transport")
 def recommend_transport(request, *, time_limit_seconds=5, min_expiry_days=1, priority_weights=None):
     """Allocate one medicine to multiple destinations using trusted eligible stock.
 

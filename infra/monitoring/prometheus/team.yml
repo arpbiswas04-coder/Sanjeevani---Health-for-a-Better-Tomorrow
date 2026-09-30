@@ -1,0 +1,24 @@
+global:
+  scrape_interval: 15s
+  scrape_timeout: 5s
+  evaluation_interval: 15s
+rule_files:
+  - /etc/prometheus/application-alerts.yml
+  - /etc/prometheus/federation-alerts.yml
+scrape_configs:
+  - job_name: federation
+    scheme: https
+    metrics_path: /metrics
+    static_configs:
+      - targets: ['127.0.0.1:8443']
+    tls_config:
+      ca_file: /run/monitor/ca.pem
+      cert_file: /run/monitor/cert.pem
+      key_file: /run/monitor/key.pem
+      min_version: TLS12
+  - job_name: backend
+    metrics_path: /internal/metrics
+    static_configs:
+      - targets: ['app-backend:8000']
+    authorization:
+      credentials_file: /run/secrets/metrics-token

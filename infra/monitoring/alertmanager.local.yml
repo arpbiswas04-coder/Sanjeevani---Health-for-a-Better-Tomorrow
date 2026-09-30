@@ -1,0 +1,14 @@
+global:
+  resolve_timeout: 1m
+route:
+  receiver: local-demo
+  group_by: [alertname, demo_run]
+  group_wait: 1s
+  group_interval: 5s
+  repeat_interval: 4h
+receivers:
+  - name: local-demo
+    webhook_configs:
+      - url: http://alert-receiver:9094/alerts
+        send_resolved: true
+        max_alerts: 100

@@ -24,6 +24,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--monitoring", action="store_true")
     parser.add_argument("--grafana", action="store_true")
+    parser.add_argument("--observability", action="store_true")
     args = parser.parse_args()
     checks = {}
 
@@ -57,7 +58,29 @@ def main():
         return False
 
     check("federation_missing_certificate_rejected", unauthenticated_rejected)
-    if args.monitoring or args.grafana:
+    if args.observability:
+        def backend_metrics():
+            token = (monitor.parent / "metrics-token").read_text().strip()
+            value = fetch("http://127.0.0.1:8000/internal/metrics",
+                          headers={"Authorization": "Bearer " + token}, structured=False)
+            return all(metric in value for metric in (
+                'sanjeevani_dependency_up{service="postgres"} 1',
+                'sanjeevani_dependency_up{service="redis"} 1',
+                'sanjeevani_operation_calls_total{kind="http",name="health",status="2xx"}'))
+        def metrics_denied():
+            try:
+                fetch("http://127.0.0.1:8000/internal/metrics", structured=False)
+            except HTTPError as error:
+                return error.code == 403
+            return False
+        def backend_scrape():
+            value = fetch("http://127.0.0.1:9090/api/v1/query?query=up%7Bjob%3D%22backend%22%7D")
+            results = value["data"]["result"]
+            return len(results) == 1 and results[0]["value"][1] == "1"
+        check("backend_authenticated_metrics_and_dependencies", backend_metrics)
+        check("backend_metrics_missing_token_rejected", metrics_denied)
+        check("prometheus_backend_scrape", backend_scrape)
+    if args.monitoring or args.grafana or args.observability:
         def scrape():
             value = fetch("http://127.0.0.1:9090/api/v1/query?query=up%7Bjob%3D%22federation%22%7D")
             results = value["data"]["result"]
@@ -71,6 +94,14 @@ def main():
                           headers={"Authorization": "Basic " + token})
             return value["dashboard"]["uid"] == "sanjeevani-federation" and len(value["dashboard"]["panels"]) == 8
         check("grafana_provisioned_dashboard", dashboard)
+        if args.observability:
+            def application_dashboard():
+                password = (monitor.parent / "grafana-admin-password").read_text().strip()
+                token = base64.b64encode(("admin:" + password).encode()).decode()
+                value = fetch("http://127.0.0.1:3000/api/dashboards/uid/sanjeevani-application",
+                              headers={"Authorization": "Basic " + token})
+                return value["dashboard"]["uid"] == "sanjeevani-application" and len(value["dashboard"]["panels"]) == 9
+            check("grafana_application_dashboard", application_dashboard)
     report = {"checked_at": datetime.now(timezone.utc).isoformat(), "checks": checks,
               "passed": all(value["passed"] for value in checks.values()),
               "scope": "Local scaffold, authenticated metrics and optional monitoring; business APIs and clinical correctness not assessed"}

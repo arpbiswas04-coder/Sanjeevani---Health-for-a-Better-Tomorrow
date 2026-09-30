@@ -21,6 +21,28 @@ that can access Docker and the restricted backup key. Docker must be running.
 No task has been registered; choose schedule, operator and failure notification
 before activation. `--keep` controls the retention plan, not destructive pruning.
 
+## Configuration backup and off-host copy interface
+
+`deployment/config_backup.py` encrypts a closed list of ten actual Compose,
+Prometheus and Grafana files using the separately stored backup key. It decrypts
+the archive into a new directory and verifies every restored file byte-for-byte.
+The local drill passed in `outputs/backups/config-g928yr1d/manifest.json`.
+It excludes environment files, secrets and application data. Object storage is
+not present in this stack; object-store backup therefore awaits an actual service.
+
+`deployment/archive_copy.py --archive <absolute-path-to-.enc> --destination <mounted-directory>`
+is an explicit operator action. It requires an existing destination outside infra,
+validates the source manifest checksum, creates a unique destination, copies only
+the encrypted archive, reads it back and records a minimal checksum receipt.
+Missing configuration or checksum mismatch fails. It never copies keys, overwrites,
+prunes or mounts a network share. A mounted path is not proof of off-host durability;
+the operator must provision/verify that storage and perform a separate restore.
+No real off-host copy has been executed. Two isolated local checks verified
+copy/read-back and tamper/missing-destination rejection.
+
+Backup command failures/timeouts now leave a sanitized `failure.json` inside the
+new job directory and return nonzero, without recording raw stderr or credentials.
+
 ## Off-host storage contract (not provisioned)
 
 Upload only the encrypted archive and manifest to a team-selected private bucket
@@ -35,7 +57,7 @@ No off-host upload, object-store backup or deletion has been executed.
 
 ## Alert delivery contract (not activated)
 
-Three Prometheus rules are loaded and validated. External delivery requires a
+Six Prometheus rules are loaded and validated with observability. External delivery requires a
 team-controlled Alertmanager/receiver and a verified destination. Store receiver
 tokens under restricted `federated/secrets/` or a secret manager. Proposed routing:
 critical `FederationScrapeUnavailable` to the on-call receiver; warning
@@ -48,7 +70,15 @@ blocked by the team operator. An inactive config example is supplied separately.
 
 ## Deployment and CI
 
-The executable local startup is `deployment/start-local.ps1 -Team -Monitoring -Grafana`.
+The executable local startup is `deployment/start-local.ps1 -Observability -Grafana`.
 The CI template remains in `infra/ci-cd/`; activation needs a root workflow change
 by the team. Cloud deployment requires a selected target, secrets, migration plan,
 rollback plan and resolved security gates. These are not satisfied by local health checks.
+
+## October 1 local-only release update
+
+Local alert firing/resolution and encrypted backup copy/decryption are verified.
+The new Alertmanager gRPC finding was fixed and its HIGH/CRITICAL rescan passed.
+Existing backend/federation security blockers remain. Hosted CI stays inactive
+under the explicitly reconfirmed infra-only restriction. Cloud/off-host services
+were excluded by the selected local-only target. See local-release-status.md.

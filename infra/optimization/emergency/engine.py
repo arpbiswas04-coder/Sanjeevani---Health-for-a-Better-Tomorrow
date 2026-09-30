@@ -22,6 +22,10 @@ def _unit_value(value, path):
     return Decimal(str(value))
 
 
+from optimization.common.telemetry import measured
+
+
+@measured("optimizer", "emergency")
 def score_emergency_priorities(request, policy=None, *, now=None):
     """Score complete, fresh facilities; preserve incomplete ones as unscored.
 

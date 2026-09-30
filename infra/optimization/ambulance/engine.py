@@ -25,6 +25,10 @@ def _boolean(value, path):
     return value
 
 
+from optimization.common.telemetry import measured
+
+
+@measured("optimizer", "ambulance")
 def recommend_ambulance(request, policy=None, *, now=None):
     """Recommend one ambulance and alternatives for one operational request.
 

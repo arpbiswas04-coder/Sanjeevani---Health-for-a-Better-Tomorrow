@@ -57,6 +57,13 @@ valid mapping and stale/unit/medicine mismatches.
 
 ## Federation model integration contract to agree
 
+An executable bounded reference artifact loader now exists in
+`federated.artifacts.load_artifact`. It verifies independently supplied SHA256,
+release/preprocessing versions and the supported synthetic parameter schema,
+without pickle or executable imports. See member4-scope-status.md for usage.
+Two focused checks cover valid initialization and rejected corrupt/incompatible
+artifacts. A real model architecture still requires Member 3's agreed contract.
+
 Member 3 must supply model architecture and versioned tensor shapes/dtypes, a safe
 artifact format/checksum, feature/target schema, preprocessing version, local
 train/evaluation split, permitted metrics and model acceptance criteria. Do not

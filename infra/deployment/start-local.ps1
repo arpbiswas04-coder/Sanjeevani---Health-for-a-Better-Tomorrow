@@ -1,4 +1,6 @@
-param([switch]$Team, [switch]$Monitoring, [switch]$Grafana)
+param([switch]$Team, [switch]$Monitoring, [switch]$Grafana, [switch]$Observability, [switch]$Alerts)
+if ($Alerts) { $Observability = $true }
+if ($Observability) { $Team = $true; $Monitoring = $true }
 $ErrorActionPreference = 'Stop'
 $dockerExecutable = (Get-Command docker -ErrorAction SilentlyContinue).Source
 if (-not $dockerExecutable) {
@@ -15,6 +17,8 @@ $composeArgs = @('compose', '--project-directory', $infraRoot, '-f', (Join-Path 
 if ($Team) { $composeArgs += @('-f', (Join-Path $infraRoot 'compose.team.yaml')) }
 if ($Monitoring -or $Grafana) { $composeArgs += @('-f', (Join-Path $infraRoot 'compose.monitoring.yaml')) }
 if ($Grafana) { $composeArgs += @('-f', (Join-Path $infraRoot 'compose.grafana.yaml')) }
+if ($Observability) { $composeArgs += @('-f', (Join-Path $infraRoot 'compose.observability.yaml')) }
+if ($Alerts) { $composeArgs += @('-f', (Join-Path $infraRoot 'compose.alerts.yaml')) }
 & $dockerExecutable @composeArgs config --quiet
 if ($LASTEXITCODE -ne 0) { throw 'Compose configuration failed. Check credentials and required environment variables.' }
 & $dockerExecutable @composeArgs up --build -d --wait --wait-timeout 180

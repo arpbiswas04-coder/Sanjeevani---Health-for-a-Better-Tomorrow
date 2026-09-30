@@ -40,7 +40,7 @@ again preserved that version, confirming persistence independently of submission
 - Real application data recovery, independently recoverable keys, off-host retention,
   object storage, alert delivery and production deployment remain separate acceptance work.
 - The privacy prototype needs authenticated peer-key exchange, separate client isolation,
-  durable accounting and an audit before use with real health data.
+  rollback-resistant accounting and an audit before use with real health data; local durable counters are implemented.
 
 Local services are intentionally left running on loopback. Stop with all four
 Compose files and `down` without `--volumes` to preserve database/model state.
@@ -56,3 +56,12 @@ stopped by the computer-use URL guard; rendering remains unverified.
 
 Final image endpoint evidence: `outputs/acceptance-dp3m4vve.json` (six checks passed).
 Seven long-running services remained running; healthchecked services were healthy.
+
+## Application monitoring completion
+
+Use `deployment/start-local.ps1 -Observability -Grafana` from infra; this includes
+the team and monitoring overlays. Ten checks passed after backend hardening in
+`outputs/acceptance-dsxvfzyi.json`. Six alert rules validate; backend UID is 1000.
+See [application monitoring](application-monitoring.md), [operations](operations-completion.md)
+and [deployment handoff](deployment-handoff.md). Prediction/optimizer panels require
+real same-process integration; API checks do not verify visual rendering.

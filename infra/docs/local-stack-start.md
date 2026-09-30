@@ -109,3 +109,12 @@ It does not modify the team database or validate real application migrations.
 All six endpoint checks and the synthetic PostgreSQL recovery drill passed on
 September 30. Three clients submitted three rounds and the server confirmed three
 aggregations. See [runtime evidence and remaining gates](local-demo-acceptance.md).
+
+## Application monitoring completion
+
+Use `deployment/start-local.ps1 -Observability -Grafana` from infra; this includes
+the team and monitoring overlays. Ten checks passed after backend hardening in
+`outputs/acceptance-dsxvfzyi.json`. Six alert rules validate; backend UID is 1000.
+See [application monitoring](application-monitoring.md), [operations](operations-completion.md)
+and [deployment handoff](deployment-handoff.md). Prediction/optimizer panels require
+real same-process integration; API checks do not verify visual rendering.

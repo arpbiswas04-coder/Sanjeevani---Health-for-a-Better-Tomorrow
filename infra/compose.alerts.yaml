@@ -1,0 +1,47 @@
+# Local-only receiver, after the observability overlay. No external notifications.
+services:
+  prometheus:
+    command:
+      - --config.file=/etc/prometheus/local-alerts.yml
+      - --storage.tsdb.path=/tmp/prometheus
+      - --storage.tsdb.retention.time=24h
+      - --storage.tsdb.retention.size=128MB
+      - --web.listen-address=0.0.0.0:9090
+    volumes:
+      - ./monitoring/prometheus/local-alerts.yml:/etc/prometheus/local-alerts.yml:ro
+  alertmanager:
+    image: sanjeevani-member4-alertmanager:local
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.alertmanager
+    user: '1000'
+    command: [--config.file=/etc/alertmanager/local.yml, --storage.path=/tmp/alerts, --cluster.listen-address=]
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    tmpfs: [/tmp]
+    mem_limit: 128m
+    pids_limit: 64
+    ports: ['127.0.0.1:9093:9093']
+    volumes:
+      - ./monitoring/alertmanager.local.yml:/etc/alertmanager/local.yml:ro
+    depends_on:
+      alert-receiver:
+        condition: service_healthy
+  alert-receiver:
+    image: sanjeevani-member4-app-backend:latest
+    command: [python, /opt/receiver/alert_receiver.py]
+    user: '1000'
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    mem_limit: 64m
+    pids_limit: 32
+    ports: ['127.0.0.1:9094:9094']
+    volumes:
+      - ./monitoring/runtime/alert_receiver.py:/opt/receiver/alert_receiver.py:ro
+    healthcheck:
+      test: [CMD, python, -c, "import urllib.request; urllib.request.urlopen('http://127.0.0.1:9094/health', timeout=2)"]
+      interval: 5s
+      timeout: 3s
+      retries: 5

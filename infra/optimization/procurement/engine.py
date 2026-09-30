@@ -25,6 +25,10 @@ def _solve(cp, model, seconds):
     return solver, solver.solve(model)
 
 
+from optimization.common.telemetry import measured
+
+
+@measured("optimizer", "procurement")
 def recommend_procurement(request, *, max_age_seconds=3600, time_limit_seconds=5, now=None):
     """Maximize shortage coverage, then minimize cost, then surplus units.
 

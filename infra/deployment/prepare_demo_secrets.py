@@ -10,7 +10,8 @@ def main():
     if not (directory / "manifest.json").is_file():
         raise ValueError("Provision the local-dev credential bundle first")
     for name, generate in (("grafana-admin-password", lambda: secrets.token_urlsafe(32).encode()),
-                           ("backup.key", Fernet.generate_key)):
+                           ("backup.key", Fernet.generate_key),
+                           ("metrics-token", lambda: secrets.token_urlsafe(32).encode())):
         target = directory / name
         if target.exists():
             continue

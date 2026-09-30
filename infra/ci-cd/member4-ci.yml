@@ -12,6 +12,44 @@ permissions:
   contents: read
 
 jobs:
+  team-scaffolds:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Frontend typecheck and build
+        working-directory: frontend
+        run: npm ci && npm run build
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Backend dependencies and static error checks
+        run: |
+          python -m pip install -r backend/requirements.txt ruff
+          python -m ruff check --select E9,F63,F7,F82 backend/app ai
+      - name: Existing backend scaffold tests
+        working-directory: backend
+        run: python -m pytest tests -q
+      - name: Existing AI placeholder tests (not model acceptance)
+        run: python -m pytest ai/tests -q
+      - name: Infra monitoring failure paths
+        working-directory: infra
+        run: python -m unittest discover -s monitoring/tests -q
+      - name: Build team images without publishing
+        run: |
+          docker build -f infra/docker/Dockerfile.backend -t sanjeevani-backend:ci backend
+          docker build -f infra/docker/Dockerfile.frontend -t sanjeevani-frontend:ci frontend
+      - name: Missing team acceptance gates
+        run: |
+          echo 'Frontend has no lint/test scripts; AI tests verify placeholders only. Team owners must add these before production approval.' >> "$GITHUB_STEP_SUMMARY"
+
   optimization:
     runs-on: ubuntu-latest
     defaults:
@@ -100,12 +138,24 @@ jobs:
   federation-image-scan:
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - component: federation
+            context: infra
+          - component: backend
+            context: backend
+          - component: frontend
+            context: frontend
+          - component: alertmanager
+            context: infra
     steps:
       - uses: actions/checkout@v4
         with:
           persist-credentials: false
-      - name: Build federation image locally (no push)
-        run: docker build --file infra/docker/Dockerfile.federation --tag sanjeevani-member4-federation:ci infra
+      - name: Build component image locally (no push)
+        run: docker build --file infra/docker/Dockerfile.${{ matrix.component }} --tag sanjeevani-member4-${{ matrix.component }}:ci ${{ matrix.context }}
       - name: Prepare report directory
         run: mkdir -p infra/outputs/security
       - name: Scan OS and Python packages
@@ -113,19 +163,19 @@ jobs:
         with:
           version: v0.74.0
           scan-type: image
-          image-ref: sanjeevani-member4-federation:ci
+          image-ref: sanjeevani-member4-${{ matrix.component }}:ci
           scanners: vuln
           vuln-type: os,library
           severity: HIGH,CRITICAL
           ignore-unfixed: 'false'
           exit-code: '1'
           format: json
-          output: infra/outputs/security/federation-image.json
+          output: infra/outputs/security/${{ matrix.component }}-image.json
       - name: Keep available image report on failure too
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: member4-federation-image
-          path: infra/outputs/security/federation-image.json
+          name: member4-${{ matrix.component }}-image
+          path: infra/outputs/security/${{ matrix.component }}-image.json
           if-no-files-found: warn
           retention-days: 7

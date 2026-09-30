@@ -1,0 +1,20 @@
+# Local rebuild of the official release with its vulnerable gRPC dependency fixed.
+FROM golang:1.25-bookworm AS build
+WORKDIR /src
+RUN git clone --depth 1 --branch v0.34.1 https://github.com/prometheus/alertmanager.git .
+RUN go get google.golang.org/grpc@v1.83.2 && go mod verify
+
+FROM node:22-alpine AS ui
+WORKDIR /ui
+COPY --from=build /src/ui/app/ ./
+RUN npm ci && npm run build
+
+FROM build AS binaries
+COPY --from=ui /ui/dist /src/ui/app/dist
+RUN CGO_ENABLED=0 go build -trimpath -o /out/alertmanager ./cmd/alertmanager \
+    && CGO_ENABLED=0 go build -trimpath -o /out/amtool ./cmd/amtool
+
+FROM prom/alertmanager:v0.34.1
+COPY --from=binaries /out/alertmanager /bin/alertmanager
+COPY --from=binaries /out/amtool /bin/amtool
+USER 1000
