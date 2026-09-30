@@ -67,3 +67,22 @@ Agree on privacy unit, public cohort/weights, permitted releases, lifetime priva
 budget, local ledger persistence and secure peer-key exchange before connecting a
 real model to the [privacy reference](federated-privacy.md). Existing clear-update
 HTTPS paths do not gain privacy guarantees automatically.
+
+## Complete boundary index
+
+| Input/output | Member 4 callable / guide | Upstream owner |
+| --- | --- | --- |
+| Inventory | `optimization.redistribution.backend.recommend_from_inventory`; backend-handoff.md | Member 2 stock, reservations, safety floors and approval |
+| Forecast | `optimization.simulation.forecast.simulate_forecast` | Member 3 provenance/horizon/units; Member 2 matching snapshot |
+| Risk/EPI | `optimization.emergency.score_emergency_priorities`; emergency-priority.md | Member 3 versioned normalized signals and observation times |
+| Emergency allocations | `optimization.emergency.resources.recommend_emergency_resources` | Fresh compatible scores and stock |
+| Staff | `optimization.workforce.engine.recommend_staff`; workforce-redistribution.md | Member 2 verified skills/roles/rest, minima and shift/travel coverage |
+| Ambulances | `optimization.ambulance.recommend_ambulance`; ambulance-allocation.md | Member 2 fleet readiness/reservations/ETA/equipment and authorized dispatch |
+| Routes | `optimization.routing.engine.recommend_routes`; vehicle-routing.md | Trusted directed matrices, capacities and time windows |
+| Procurement | `optimization.procurement.engine.recommend_procurement`; procurement-recommendations.md | Trusted offers, budget/deadlines; approval external |
+| Resilience | `optimization.simulation.resilience.assess_resilience`; resilience-orchestration.md | Versioned scenario weights; team validation |
+| Models | Safe artifact contract above | Member 3 preprocessing, eligibility and acceptance criteria |
+
+All examples are synthetic. Member 2 owns authorization, idempotency, expiry,
+record persistence, human approval and transactional rechecks. Never silently
+refresh real timestamps, infer clinical policy or replace missing signals with zero.

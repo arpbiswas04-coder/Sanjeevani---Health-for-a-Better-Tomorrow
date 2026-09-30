@@ -1,6 +1,9 @@
 # Member 4 — optimization, federation, and infrastructure
 
 All Member 4 implementation files live inside this `infra/` directory.
+Current status: [requirement evidence](docs/requirements-evidence.md),
+[local acceptance](docs/local-demo-acceptance.md), and
+[remaining security findings](docs/security-findings.md).
 Start with the [delivery checklist and handoff](docs/member4-handoff.md) for a
 single demo command, verified scope and mandatory unfinished integration work.
 Run the commands below from `infra/`, not from the repository root.

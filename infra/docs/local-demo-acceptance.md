@@ -26,7 +26,8 @@ Recovery evidence: `outputs/backups/drill-0j4yt0nw/report.json`.
 Reports and secrets are ignored by Git; these paths describe this host only.
 After dependency upgrades, all 30 federation checks passed and `pip check` found
 no broken requirements. The updated container clients submitted another synthetic
-round; server aggregation must still be checked independently of submission.
+round; the checkpoint subsequently validated model version 4. Replacing the image
+again preserved that version, confirming persistence independently of submissions.
 
 ## Remaining external and production gates
 
@@ -43,3 +44,15 @@ round; server aggregation must still be checked independently of submission.
 
 Local services are intentionally left running on loopback. Stop with all four
 Compose files and `down` without `--volumes` to preserve database/model state.
+
+## Completion pass evidence
+
+Six focused ledger/privacy/resilience checks passed. Two fresh containers advanced
+all release counts from 1 to 2 (`outputs/privacy-persistence.json`). The runtime
+without pip passed its regional training check. Backup job evidence is in
+`outputs/backups/scheduled-85vwbf94/`. Removing bundled installers eliminated two
+findings; 47 image findings remain (security-findings.md). Visual inspection was
+stopped by the computer-use URL guard; rendering remains unverified.
+
+Final image endpoint evidence: `outputs/acceptance-dp3m4vve.json` (six checks passed).
+Seven long-running services remained running; healthchecked services were healthy.

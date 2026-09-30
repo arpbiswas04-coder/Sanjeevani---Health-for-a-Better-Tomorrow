@@ -171,8 +171,8 @@ container startup and rendering remain unverified. See `docs/federated-grafana.m
 
 Added: a separate `infra/compose.yaml` with a non-root federation image,
 coordinator, three on-demand clients, read-only per-role credentials, persistent
-checkpoints and listener healthcheck. Static checks passed; Docker is unavailable
-on the implementation host, so builds/runtime remain unverified. See
+checkpoints and listener healthcheck. Local image builds, runtime acceptance and synthetic recovery passed; see
+`docs/local-demo-acceptance.md` for current evidence. See
 `docs/federated-docker.md`. The complete application stack remains pending integration.
 
 Verify the supplied Member 4 Compose stack on a Docker-capable host and integrate

@@ -73,14 +73,13 @@ automatic migration is performed. Credentials remain on the host.
   credentials, successful aggregation, persistence or model quality.
 - Images use pinned direct Python dependencies, but base tags and transitive
   dependencies are not digest/hash locked. Reproducible release builds and image
-  scanning remain pending.
+  release hardening remain pending; local scans found unresolved vulnerabilities.
 
-Docker was unavailable during implementation. YAML parsing, role mounts, build
-paths and Python entrypoint syntax were checked; image builds and container
-execution remain unverified. No images were downloaded and no training ran.
+September 30 runtime update: images built, three client rounds aggregated,
+monitoring ran and the encrypted synthetic database restore passed. See
+`local-demo-acceptance.md` for evidence and `security-findings.md` for release blockers.
 
-Next: verify this stack with Docker, then connect the team's application services,
-add metrics/alerts, image scanning and backup/restore procedures. This does not
+Next: integrate actual team APIs/models and resolve the documented production gates. This does not
 make the development HTTP service suitable for public production deployment.
 
 References: Docker's [Compose profiles](https://docs.docker.com/compose/how-tos/profiles/)

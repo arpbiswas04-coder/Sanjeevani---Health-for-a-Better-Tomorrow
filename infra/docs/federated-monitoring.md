@@ -69,10 +69,9 @@ Stop using both files, retaining checkpoint data:
 docker compose -f compose.yaml -f compose.monitoring.yaml down
 ```
 
-Two focused handler/metrics checks passed without listeners or training. YAML was
-parsed locally. Docker, `promtool`, actual scraping and alert evaluation remain
-unverified on this host. When Docker is available, validate the mounted config
-before starting (credentials must already exist):
+Local runtime update: authenticated scraping succeeded, and promtool validated
+the mounted config and all three rules. External alert delivery remains unconfigured.
+To validate again after configuration changes (credentials must exist):
 
 ```powershell
 docker compose -f compose.yaml -f compose.monitoring.yaml run --rm --no-deps --entrypoint /bin/promtool prometheus check config /etc/prometheus/federation.yml

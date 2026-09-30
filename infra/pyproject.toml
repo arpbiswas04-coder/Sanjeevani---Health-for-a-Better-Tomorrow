@@ -20,7 +20,7 @@ sanjeevani-redistribute = "optimization.redistribution.cli:main"
 include = ["optimization*", "federated*"]
 
 [tool.setuptools.package-data]
-"optimization.simulation" = ["example.json", "timeline-example.json", "replenishment-example.json", "comparison-example.json"]
+"optimization.simulation" = ["example.json", "timeline-example.json", "replenishment-example.json", "comparison-example.json", "resilience-example.json"]
 "optimization.ambulance" = ["example.json"]
 "optimization.emergency" = ["example.json", "policy.example.json", "resource-example.json"]
 "optimization.workforce" = ["example.json"]

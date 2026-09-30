@@ -16,13 +16,13 @@ this startup overhead is acceptable for a small demonstration.
 ## Environment
 
 Run from `infra/`. Keep this environment separate from the optimizer: Flower
-1.22.0 and OR-Tools 9.15.6755 require incompatible protobuf versions. Do not
+uses an independently managed environment from OR-Tools 9.15.6755. Do not
 install the transport and federation extras into the same environment.
 
 ```powershell
 python -m venv .venv-federated
-.\.venv-federated\Scripts\python.exe -m pip install torch==2.9.0 --index-url https://download.pytorch.org/whl/cpu
-.\.venv-federated\Scripts\python.exe -m pip install flwr==1.22.0
+.\.venv-federated\Scripts\python.exe -m pip install torch==2.14.0 --index-url https://download.pytorch.org/whl/cpu
+.\.venv-federated\Scripts\python.exe -m pip install ".[federation]"
 ```
 
 The local environment is already installed with these versions. No GPU is needed.

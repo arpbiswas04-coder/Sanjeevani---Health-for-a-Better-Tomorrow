@@ -1,7 +1,7 @@
 """Client-level clipped Gaussian releases with conservative zCDP composition.
 
 This reference uses an ideal-Gaussian analysis with finite precision sampling.
-It is not a production-audited DP implementation or a persistent privacy ledger.
+It is not production-audited. Optional PrivacyLedger provides durable demo counters.
 """
 import math
 import random
@@ -23,7 +23,7 @@ def vector(value):
 
 
 class GaussianRelease:
-    def __init__(self, config):
+    def __init__(self, config, *, ledger=None, node=None):
         policy = object_fields(config, required={"clipping_norm", "noise_multiplier", "delta", "max_epsilon"}, optional=set(), path="privacy")
         self.clip = nonnegative_number(policy["clipping_norm"], "clipping_norm")
         self.sigma = nonnegative_number(policy["noise_multiplier"], "noise_multiplier")
@@ -31,7 +31,8 @@ class GaussianRelease:
         self.maximum = nonnegative_number(policy["max_epsilon"], "max_epsilon")
         if not 1e-6 <= self.clip <= 1000 or not .01 <= self.sigma <= 100 or not 1e-12 <= self.delta < 1 or not 0 < self.maximum <= 1000:
             raise ValidationError("Unsupported privacy configuration")
-        self.releases = 0
+        self.ledger, self.node = ledger, node
+        self.releases = ledger.snapshot()[node] if ledger is not None else 0
         self._random = random.SystemRandom()
 
     def budget(self, releases=None):
@@ -49,5 +50,6 @@ class GaussianRelease:
         # Replace-one-client adjacency: clipped vectors differ by at most 2C.
         deviation = 2 * self.clip * self.sigma
         # Charge before sampling; a failed/aborted round does not refund releases.
-        self.releases += 1
+        self.releases = (self.ledger.reserve(self.node, self.budget, self.maximum)
+                         if self.ledger is not None else self.releases + 1)
         return [max(-1_000_000.0, min(1_000_000.0, x * factor + self._random.normalvariate(0, deviation))) for x in values]

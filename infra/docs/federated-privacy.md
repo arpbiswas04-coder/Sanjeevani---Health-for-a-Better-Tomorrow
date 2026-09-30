@@ -33,10 +33,10 @@ calculations follow [Bun and Steinke's zCDP analysis](https://arxiv.org/abs/1605
 
 The implementation uses OS-backed random sampling through `SystemRandom` with
 floating-point Gaussian arithmetic. The bound describes the ideal mechanism; a
-finite-precision privacy/security audit has not been performed. Budgets are
-in-memory for one demo session; repeated runs must not be treated as fresh budgets
-on real data. A durable per-client ledger, agreed adjacency and audited sampling
-are prerequisites for production integration. Coordinate bounding and quantization
+finite-precision privacy/security audit has not been performed. Default session mode resets counters. Optional SQLite mode charges durably before
+sampling, serializes concurrent reservations and refuses changed policy/roster or
+missing/corrupt ledgers. Audited sampling, agreed adjacency and rollback-resistant
+storage remain production requirements. Coordinate bounding and quantization
 after noise are fixed post-processing operations.
 
 ## Masked aggregation
@@ -72,3 +72,21 @@ Three focused checks passed: clipping/noise calibration and budget refusal,
 mask cancellation and fail-closed dropout/replay/key reuse, and combined synthetic
 execution. No external model or long training run was used. A production privacy
 claim remains explicitly false in demo output until the listed gaps are resolved.
+
+## Explicit durable synthetic workflow
+
+Initialize a NEW ledger once, then run without initialization:
+
+```powershell
+docker compose -f compose.yaml -f compose.privacy.yaml run --rm --no-deps federation-privacy-demo privacy --ledger federated/checkpoints/privacy.sqlite --initialize-ledger --rounds 1
+docker compose -f compose.yaml -f compose.privacy.yaml run --rm --no-deps federation-privacy-demo
+```
+
+The `privacy-budget` volume survives container replacement. On this host it is
+already initialized: use only the second command. Initialization refuses existing
+files. Never delete/roll back a ledger to bypass exhaustion. Two fresh containers
+advanced all counts from 1 to 2 (`outputs/privacy-persistence.json`). Model weights
+restart for each synthetic invocation; lifetime release counts continue. Failed
+rounds may leave different counts, independently charged and reported. Commits
+precede sampling; privileged editing/deletion and rollback are not prevented.
+The direct CLI supports these flags under `infra/federated/checkpoints/`.

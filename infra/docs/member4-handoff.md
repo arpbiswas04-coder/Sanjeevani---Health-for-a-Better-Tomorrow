@@ -82,3 +82,13 @@ on real health data. Activate CI and fix failures before an integration PR is me
 All implementation changes in this work stay under `infra/`. Root application
 files and workflow activation remain team-owned. No final estimate based on file
 count should replace the acceptance gates above.
+
+## Current completion-pass status
+
+See [requirement evidence](requirements-evidence.md) for every assignment area.
+Durable synthetic accounting, resilience scoring and scheduler-ready backup
+tooling are implemented with focused checks. Checkpoint version 4 survived image
+replacement. Runtime and synthetic restore passed. Remaining: cryptography/base
+security findings, real Member 2/3 integrations, root CI activation, cloud/receiver/
+off-host credentials, real-data privacy review and visual dashboard inspection
+blocked by the computer-use URL guard. No production-ready claim is made.

@@ -72,3 +72,12 @@ not an approved security exception. Hosted CI remains inactive.
 Tool references: [pip-audit](https://github.com/pypa/pip-audit),
 [Trivy image scanning](https://trivy.dev/docs/latest/references/configuration/cli/trivy_image/)
 and [Trivy GitHub Action](https://github.com/aquasecurity/trivy-action).
+
+## Final targeted image scan
+
+Pip-vendored msgpack/setuptools records were traced to `pip/_vendor/vendor.txt`
+and `bom.cdx.json`. Runtime pip and its ensurepip wheel are now removed after
+build-time dependency checks. Components were removed, not hidden from scanning;
+container training still passed. Findings reduced from 49 to 47: 44 unfixed Debian
+package/advisory occurrences and three cryptography findings beyond Flower's
+supported range. See [exact findings](security-findings.md).
