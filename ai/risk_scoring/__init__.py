@@ -1,1 +1,1 @@
-"""Package initialization."""
+"""Composite resilience and risk scoring for healthcare facilities."""
