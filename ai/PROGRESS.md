@@ -88,21 +88,60 @@ Persistent tracking document for Member 3 (`ai/member-3`) machine learning pipel
 
 ---
 
-## 9. Next Phase
-- **Target**: **Phase 4** (per project roadmap)
+## 9. Phase 4 Completed Implementation — Expiry Prediction & Anomaly Detection
+
+### A. Expiry Prediction (`ai/expiry_prediction/`)
+| File | Type | Description |
+| :--- | :--- | :--- |
+| [`ai/expiry_prediction/config.py`](./expiry_prediction/config.py) | Config | Model version, near-zero threshold, and explicit implementation-chosen wastage risk ratio cutoffs |
+| [`ai/expiry_prediction/schema.py`](./expiry_prediction/schema.py) | Schema | Pydantic v2 schemas for documented inputs (batch expiry, stock, current/forecast consumption) and outputs (unused quantity, wastage risk, financial loss) |
+| [`ai/expiry_prediction/features.py`](./expiry_prediction/features.py) | Features | Leak-free shelf-life, projected consumption, unused quantity, wastage ratio, and financial loss |
+| [`ai/expiry_prediction/data.py`](./expiry_prediction/data.py) | Data | Schema validation, record normalization into pandas DataFrame with finite-value checks |
+| [`ai/expiry_prediction/train.py`](./expiry_prediction/train.py) | Train | `ExpiryCoverageForecaster(BaseForecaster)` lifecycle and convenience `train_expiry_pipeline` |
+| [`ai/expiry_prediction/evaluate.py`](./expiry_prediction/evaluate.py) | Evaluate | `evaluate_expiry_predictions` reusing `ai.common.metrics.calculate_classification_metrics` |
+| [`ai/expiry_prediction/predict.py`](./expiry_prediction/predict.py) | Inference | `ExpiryPredictor(BasePredictor)` inference service assigning canonical `RiskLevel` |
+| [`ai/expiry_prediction/__init__.py`](./expiry_prediction/__init__.py) | Package | Clean public exports |
+| [`ai/tests/test_expiry_prediction.py`](./tests/test_expiry_prediction.py) | Tests | 32 focused unit tests across 6 test classes |
+
+### B. Anomaly Detection (`ai/anomaly_detection/`)
+| File | Type | Description |
+| :--- | :--- | :--- |
+| [`ai/anomaly_detection/config.py`](./anomaly_detection/config.py) | Config | Documented target types, normal MAD consistency scale (1.4826), and implementation-chosen z-score thresholds |
+| [`ai/anomaly_detection/schema.py`](./anomaly_detection/schema.py) | Schema | Pydantic v2 schemas for targets (sudden decrease, abnormal consumption, unusual disease, attendance drop, suspicious adjustment) |
+| [`ai/anomaly_detection/features.py`](./anomaly_detection/features.py) | Features | Robust z-score computation using Median and MAD, zero-variance handling, and surge/drop directionality |
+| [`ai/anomaly_detection/data.py`](./anomaly_detection/data.py) | Data | Normalization and validation for anomaly records |
+| [`ai/anomaly_detection/train.py`](./anomaly_detection/train.py) | Train | `RobustZScoreAnomalyDetector(BaseForecaster)` baseline fitting, serialization, and batch inference |
+| [`ai/anomaly_detection/evaluate.py`](./anomaly_detection/evaluate.py) | Evaluate | `evaluate_anomaly_predictions` and `evaluate_records_anomaly` reusing common metrics |
+| [`ai/anomaly_detection/predict.py`](./anomaly_detection/predict.py) | Inference | `AnomalyDetectorPredictor(BasePredictor)` inference service with canonical `RiskLevel` mapping |
+| [`ai/anomaly_detection/__init__.py`](./anomaly_detection/__init__.py) | Package | Clean public exports |
+| [`ai/tests/test_anomaly_detection.py`](./tests/test_anomaly_detection.py) | Tests | 29 focused unit tests across 6 test classes |
 
 ---
 
-## 10. Important Safety Rules
-1. Work exclusively within `ai/` on branch `ai/member-3`.
-2. Do not modify `frontend/`, `backend/`, `infra/`, `federated/`, `optimization/`, or any other team member's files.
-3. Treat project Markdown specifications in `docs/` and root `README.md` as the absolute source of truth.
-4. Never fabricate metrics, confidence intervals, or model behavior.
-5. Checkpoint progress and verify test passes before transitioning across major phases.
+## 10. Phase 4 Validation Summary
+- **Phase 4 Expiry Tests**: 32 tests passed (`python -m unittest ai.tests.test_expiry_prediction -v`).
+- **Phase 4 Anomaly Tests**: 29 tests passed (`python -m unittest ai.tests.test_anomaly_detection -v`).
+- **Full AI Suite (Phases 1–4)**: 171 tests passed (`python -m unittest discover -s ai/tests -v`).
+- **Repository Boundaries**: Strictly confined to `ai/`. Zero files modified outside `ai/`.
+- **Zero fabricated labels, probabilities, or confidence scores.**
 
 ---
 
-## 8. Important Safety Rules
+## 11. Phase 4 Key Implementation Assumptions
+
+1. **Expiry Prediction — Primary burn rate**: `effective_daily_rate` uses `forecast_consumption` (from Phase 2) as the primary forward-looking daily rate if positive, falling back to `current_consumption` if forecast consumption is 0.
+2. **Expiry Prediction — Wastage Risk Thresholds**: `wastage_ratio = likely_unused_quantity / batch_stock`. Thresholds `CRITICAL >= 0.50`, `HIGH >= 0.20`, `MODERATE >= 0.05`, `LOW < 0.05` are implementation defaults documented in `config.py` since the source documents specify no numeric boundaries.
+3. **Anomaly Detection — Robust Z-score approach**: Robust z-score (using Median and scaled MAD with $k=1.4826$) was intentionally selected as one of the three documented approaches in the Member 3 source of truth, alongside Isolation Forest and Local Outlier Factor.
+4. **Anomaly Detection — Anomaly & Risk Thresholds**: Thresholds $|Z| \ge 4.5$ (`CRITICAL`), $|Z| \ge 3.0$ (`HIGH`/anomaly), $|Z| \ge 2.0$ (`MODERATE`), and $|Z| < 2.0$ (`LOW`) are implementation defaults documented in `config.py`.
+
+---
+
+## 12. Next Phase
+- **Target**: **Phase 5** (per project roadmap)
+
+---
+
+## 13. Important Safety Rules
 1. Work exclusively within `ai/` on branch `ai/member-3`.
 2. Do not modify `frontend/`, `backend/`, `infra/`, `federated/`, `optimization/`, or any other team member's files.
 3. Treat project Markdown specifications in `docs/` and root `README.md` as the absolute source of truth.
