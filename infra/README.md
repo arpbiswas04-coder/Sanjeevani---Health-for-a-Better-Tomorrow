@@ -90,10 +90,13 @@ The template sets its working directory to `infra` so the team can activate it
 later through a separately agreed change outside this directory. Until then,
 run the test commands locally.
 
-## Planned infrastructure
+## Local Docker demo and integration
 
-Agree with Member 2 on backend startup, database, dependency versions, health
-endpoints, and environment variables before defining shared Docker services.
-Shared application deployment, access controls, monitoring, and backup/restore
-are not implemented yet. Federation has a separate private-development mutual-TLS
-HTTPS service; see its guide above. The CLI healthcheck confirms module execution only.
+Follow [local stack startup](docs/local-stack-start.md) for the optional team
+Compose overlay and generated local secrets. Backend/frontend are existing team
+scaffolds; their business APIs and trained models are not ready. Review the
+[integration contracts](docs/team-integration-contracts.md), separate synthetic
+[privacy reference](docs/federated-privacy.md), and
+[database recovery tooling](docs/local-database-recovery.md).
+Container execution, real database restoration, hosted CI and production privacy
+remain acceptance gates; see [handoff](docs/member4-handoff.md).

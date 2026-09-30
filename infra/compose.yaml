@@ -37,6 +37,12 @@ x-client: &client
   restart: 'no'
 
 services:
+  federation-privacy-demo:
+    <<: *runtime
+    profiles: [privacy]
+    command: [privacy]
+    network_mode: none
+    restart: 'no'
   federation-server:
     <<: *runtime
     command: [server]

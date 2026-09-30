@@ -182,6 +182,14 @@ and tested backup/restore. Keep production deployment a separate approved action
 
 ## Before each pull request
 
+September 30 local-demo update: added team Compose overlay, restricted development
+environment generation, proposed Member 2/3 contracts, validated forecast adapter,
+synthetic privacy/masked-aggregation reference, and encrypted PostgreSQL recovery
+helper. Five focused checks passed (database commands mocked). Docker Desktop and
+WSL installed; Virtual Machine Platform requires a Windows restart (exit 3010).
+Combined Compose configuration validated; builds, monitoring and actual restore
+remain unverified. See `docs/local-stack-start.md` and `docs/member4-handoff.md`.
+
 Sync with the team's integration branch; inspect changes; run relevant tests;
 check for secrets; document input/output changes; coordinate shared-file edits.
 Do not assume a local CI pass means a hosted workflow or deployment has run.

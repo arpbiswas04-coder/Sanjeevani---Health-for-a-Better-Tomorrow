@@ -39,14 +39,16 @@ clinical validation, production readiness or live cross-service integration.
 
 ## Mandatory unfinished work — do not mark complete
 
-1. **Privacy:** differential privacy with clipping/noise, privacy accounting and
-   utility evaluation; secure aggregation so the coordinator does not receive
-   clear individual updates. TLS/HMAC do not implement either requirement.
+1. **Privacy:** a separate synthetic reference now implements clipping, Gaussian
+   noise, session accounting, utility comparison and fixed-roster pairwise masked
+   aggregation. See [privacy limitations](federated-privacy.md). It is not wired
+   into HTTPS training, audited, dropout-tolerant or approved for real health data.
 2. **Member 2 integration:** actual authorized APIs, recommendation persistence,
    human approval, atomic stock reservation/rechecks and live roster/fleet data.
    These belong in the backend and cannot be completed through infra-only changes.
-3. **Member 3 integration:** agreed forecast schemas, real model artifacts and
-   eligible local training data. Current federation data/model are synthetic.
+3. **Member 3 integration:** proposed [team contracts](team-integration-contracts.md)
+   and a freshness/context-checked forecast adapter are supplied. Teammates must
+   accept the contracts and supply real APIs, artifacts and eligible local data.
 4. **Runtime acceptance:** install/use Docker on a suitable host, build images,
    run the Member 4 stack, verify certificates/volume permissions, inspect actual
    metrics/dashboard and then integrate the full team application stack.
@@ -54,9 +56,15 @@ clinical validation, production readiness or live cross-service integration.
    `.github/workflows/`, runs checks, addresses scanner findings and configures
    branch protection/staging. No hosted workflow, image scan or deployment is
    claimed to have run. Current actions/image versions still need release review.
-6. **Disaster recovery:** database and object-storage backups, off-host retention,
-   independently recoverable keys, and restore drills. Model checkpoints alone
-   do not back up the application.
+6. **Disaster recovery:** encrypted local PostgreSQL backup and restore-to-new-DB
+   tooling is supplied; [guide](local-database-recovery.md). Only mocked command
+   checks passed. Actual restore, object-storage backups, off-host retention and
+   independently recoverable keys remain pending.
+
+The agreed immediate target is a [local Docker demo](local-stack-start.md).
+`compose.team.yaml` adds the existing backend/frontend scaffolds, PostgreSQL and
+Redis without editing teammates' files. Five focused privacy, forecast and mocked
+database-recovery checks passed; these do not verify container runtime behavior.
 
 Other assignment items still need agreed scope: resilience orchestration,
 cross-country/BRICS federation, optional personalization and richer digital-twin

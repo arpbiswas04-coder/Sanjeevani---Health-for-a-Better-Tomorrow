@@ -13,6 +13,8 @@ def main():
         environment["SANJEEVANI_NODE_KEYS_JSON"] = (directory / "node-keys.json").read_text()
         module = "federated.server.https"
         arguments = ["--host", "0.0.0.0", "--checkpoint", "/app/infra/federated/checkpoints/compose.json"]
+    elif role == ["privacy"]:
+        os.execve(sys.executable, [sys.executable, "-m", "federated.privacy"], environment)
     elif len(role) == 2 and role[0] == "client" and role[1] in ("district-a", "district-b", "district-c"):
         environment["SANJEEVANI_NODE_KEY_HEX"] = (directory / "signing-key.txt").read_text()
         module = "federated.clients.https"

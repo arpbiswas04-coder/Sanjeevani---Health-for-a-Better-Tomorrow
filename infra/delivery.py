@@ -31,12 +31,12 @@ def readiness():
             "federation_environment_present": (ROOT / ".venv-federated/Scripts/python.exe").exists() or (ROOT / ".venv-federated/bin/python").exists(),
             "ci_template_present": (ROOT / "ci-cd/member4-ci.yml").is_file(),
             "scope": "Local prerequisite inventory only; does not verify Docker daemon, credentials or deployed services",
-            "required_remaining": ["Differential privacy with accounting and utility evaluation",
-                                   "Secure aggregation beyond transport encryption",
+            "required_remaining": ["Integrate and audit reference privacy mechanisms for real training",
+                                   "Authenticated secure aggregation with dropout/collusion handling",
                                    "Member 2 live APIs/approval integration and Member 3 model/data integration",
                                    "Full application Docker deployment and runtime verification",
                                    "Activate and execute reviewed CI/security checks",
-                                   "Database/object-storage backup and actual restore drill"]}
+                                   "Execute PostgreSQL restore drill; add object-storage/off-host recovery"]}
 
 
 def main():
