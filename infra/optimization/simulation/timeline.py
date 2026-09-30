@@ -1,4 +1,4 @@
-"""Sequential safe-surplus ledger, without live transfers or replenishment."""
+"""Sequential safe-surplus ledger with explicit hypothetical replenishment."""
 import copy
 import hashlib
 import json
@@ -20,11 +20,14 @@ def run_timeline(value):
         raise ValidationError("Provide 1..365 periods")
     remaining = {row["facility_id"]: row["safe_surplus"] for row in baseline["candidate_sources"]}
     initial = sum(remaining.values())
+    inventory = copy.deepcopy(baseline)
+    sources = {row["facility_id"]: row for row in inventory["candidate_sources"]}
+    seen_batches = {node: {source["batch_id"]} for node, source in sources.items()}
     rows = []
-    totals = {"delivered": 0, "lost": 0, "expired": 0, "unmet_demand": 0, "transport_cost_paise": 0}
+    totals = {"arrived": 0, "delivered": 0, "lost": 0, "expired": 0, "unmet_demand": 0, "transport_cost_paise": 0}
     previous = -1
     for raw in periods:
-        period = object_fields(raw, required={"day", "demand"}, optional={"blocked_sources", "losses"}, path="period")
+        period = object_fields(raw, required={"day", "demand"}, optional={"blocked_sources", "losses", "arrivals"}, path="period")
         day = integer(period["day"], "day")
         if day <= previous or day > 3650: raise ValidationError("Days must increase strictly within 0..3650")
         previous = day
@@ -35,13 +38,37 @@ def run_timeline(value):
         if len(blocked) != len(set(blocked)) or not set(blocked) <= remaining.keys():
             raise ValidationError("Unknown or duplicate blocked source")
         opening = dict(remaining)
-        expired, losses = {}, {}
+        expired, losses, arrived = {}, {}, {}
         # Expiry removes stock at the start of the day, before explicit losses.
-        for source in baseline["candidate_sources"]:
+        for source in inventory["candidate_sources"]:
             node = source["facility_id"]
             if source["expiry_days"] - day <= 0 and remaining[node]:
                 expired[node] = remaining[node]
                 remaining[node] = 0
+        receipts = period.get("arrivals", [])
+        if not isinstance(receipts, list) or len(receipts) > len(remaining):
+            raise ValidationError("Invalid arrivals")
+        for raw_receipt in receipts:
+            receipt = object_fields(raw_receipt, required={"facility_id", "batch_id", "safe_surplus", "expiry_days"},
+                                    optional=set(), path="arrival")
+            node = identifier(receipt["facility_id"], "arrival facility")
+            batch = identifier(receipt["batch_id"], "arrival batch")
+            quantity = integer(receipt["safe_surplus"], "arrival safe surplus", 1)
+            shelf_life = integer(receipt["expiry_days"], "arrival expiry days", 1)
+            if node not in sources or node in arrived:
+                raise ValidationError("Unknown or duplicate arrival facility")
+            source = sources[node]
+            if batch == source["batch_id"]:
+                if source["expiry_days"] != day + shelf_life:
+                    raise ValidationError("An existing batch cannot change its expiry date")
+            else:
+                if remaining[node] != 0 or batch in seen_batches[node]:
+                    raise ValidationError("New batch requires an empty source ledger and a new batch ID")
+                source["batch_id"] = batch
+                source["expiry_days"] = day + shelf_life
+                seen_batches[node].add(batch)
+            remaining[node] += quantity
+            arrived[node] = quantity
         changes = period.get("losses", [])
         if not isinstance(changes, list) or len(changes) > len(remaining):
             raise ValidationError("Invalid losses")
@@ -53,7 +80,7 @@ def run_timeline(value):
                 raise ValidationError("Unknown/duplicate loss or loss exceeds remaining unexpired surplus")
             losses[node] = amount
             remaining[node] -= amount
-        request = copy.deepcopy(baseline)
+        request = copy.deepcopy(inventory)
         request["required_quantity"] = demand
         for source in request["candidate_sources"]:
             node = source["facility_id"]
@@ -66,24 +93,28 @@ def run_timeline(value):
             remaining[node] -= amount
             delivered[node] += amount
         for node in remaining:
-            if remaining[node] < 0 or opening[node] != remaining[node] + delivered[node] + losses.get(node, 0) + expired.get(node, 0):
+            if remaining[node] < 0 or opening[node] + arrived.get(node, 0) != remaining[node] + delivered[node] + losses.get(node, 0) + expired.get(node, 0):
                 raise RuntimeError("Simulation stock conservation failed")
         totals["delivered"] += recommendation["fulfilled_quantity"]
         totals["unmet_demand"] += recommendation["unresolved_shortage"]
         totals["transport_cost_paise"] += recommendation["estimated_transport_cost_paise"]
         totals["lost"] += sum(losses.values())
         totals["expired"] += sum(expired.values())
+        totals["arrived"] += sum(arrived.values())
         rows.append({"day": day, "assumptions": copy.deepcopy(period), "opening_safe_surplus": opening,
-                     "expired": expired, "losses": losses, "simulated_deliveries": delivered,
+                     "expired": expired, "arrivals": arrived, "losses": losses, "simulated_deliveries": delivered,
+                     "closing_batches": {node: {"batch_id": source["batch_id"], "expiry_day": source["expiry_days"]}
+                                         for node, source in sources.items()},
                      "closing_safe_surplus": dict(remaining), "recommendation": recommendation})
     logging.getLogger(__name__).info("timeline_completed periods=%d", len(rows))
-    return {"simulation_version": "safe-surplus-timeline-v1", "simulation_only": True,
+    return {"simulation_version": "safe-surplus-timeline-v2", "simulation_only": True,
             "input_sha256": hashlib.sha256(json.dumps(data, sort_keys=True, separators=(",", ":"), allow_nan=False).encode()).hexdigest(),
             "periods": rows, "totals": totals, "initial_safe_surplus": initial,
             "final_safe_surplus": remaining,
             "assumptions": ["Hypothetical immediate deliveries are consumed within each period; no real approval or dispatch occurs.",
                             "Demand is externally supplied and unmet demand is not carried forward.",
                             "Only transferable safe surplus is tracked; protected stock and source consumption are outside this ledger.",
-                            "No replenishment, destination storage, travel delays, forecasting or resilience score.",
-                            "Blocked access lasts one period and does not destroy stock. Expiry occurs before explicit losses.",
+                            "Arrivals are externally supplied transferable surplus, not full receipts or procurement orders.",
+                            "One active batch per source; no destination storage, travel delays, forecasting or resilience score.",
+                            "Blocked outbound access lasts one period; arrivals still occur. Processing order is expiry, arrivals, losses, allocation.",
                             "Days are offsets from the initial snapshot; unlisted days have no demand or delivery events."]}

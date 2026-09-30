@@ -39,6 +39,7 @@ If Python is not on PATH, see the verified Windows command in the
   [dependency and image scanning](docs/security-scanning.md),
   [redistribution scenario simulation](docs/scenario-simulation.md),
   [sequential inventory simulation](docs/inventory-timeline.md),
+  [baseline-versus-disruption timeline comparison](docs/timeline-comparison.md),
   [quickstart](docs/member4-quickstart.md), and
   [roadmap](docs/member4-roadmap.md).
 - `ci-cd/`: proposed GitHub Actions workflow template.

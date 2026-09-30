@@ -109,10 +109,20 @@ privacy accounting, secure aggregation, and optional local personalization.
 
 ## Milestone 6 — simulation
 
+Implemented: baseline-versus-alternative timeline comparison on a shared snapshot,
+policy and day grid. Includes per-day shortage/delivery deltas, full traces and
+summary metrics with explicit zero-demand semantics. Two focused checks passed;
+see `docs/timeline-comparison.md`. No resilience score is inferred.
+
 Implemented: sequential safe-surplus ledger with simulated deliveries, per-period
 blocking, permanent losses, expiry and per-source conservation checks. Two focused
-checks passed. See `docs/inventory-timeline.md`. Replenishment, destination storage,
+checks passed. See `docs/inventory-timeline.md`. Destination storage,
 travel delays and forecast integration remain pending; this is not a complete twin.
+
+Added: explicit replenishment arrivals and supplier-delay modeling in timeline v2,
+arrival-inclusive conservation, per-source closing batch metadata and safeguards
+against mixed batches or expiry resets. Five timeline checks passed. One active
+batch per source remains the supported limit.
 
 Implemented: isolated baseline-versus-scenario comparisons using redistribution v1,
 with demand changes, source outages, surplus loss, cost changes and expiry aging.
