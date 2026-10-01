@@ -1,0 +1,22 @@
+# Explicit public ingress only; requires Docker Compose supporting !reset/!override.
+services:
+  ingress:
+    ports: !override ['0.0.0.0:80:8081', '0.0.0.0:443:8444']
+  app-backend:
+    ports: !reset []
+    environment:
+      APP_ENV: production
+  app-frontend:
+    ports: !reset []
+  app-postgres:
+    ports: !reset []
+  federation-server:
+    ports: !reset []
+  prometheus:
+    ports: !reset []
+  grafana:
+    ports: !reset []
+  alertmanager:
+    ports: !reset []
+  alert-receiver:
+    ports: !reset []

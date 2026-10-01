@@ -1,0 +1,41 @@
+# Apply after team/monitoring overlays. Local HTTPS mode, not public production.
+services:
+  app-frontend:
+    build:
+      args:
+        VITE_BACKEND_URL: '${PUBLIC_HTTPS_ORIGIN:-https://localhost:9443}'
+  app-backend:
+    environment:
+      BACKEND_CORS_ORIGINS: '${CORS_ALLOWED_ORIGINS:-["https://localhost:9443"]}'
+  ingress:
+    image: nginx:stable-alpine
+    user: '1000'
+    entrypoint: [nginx]
+    command: [-c, /etc/nginx/member4.conf, -g, 'daemon off;']
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    tmpfs: [/tmp]
+    mem_limit: 128m
+    pids_limit: 64
+    ports: ['127.0.0.1:9080:8081', '127.0.0.1:9443:8444']
+    volumes:
+      - '${NGINX_CONFIG:-./nginx/member4-tls.conf}:/etc/nginx/member4.conf:ro'
+      - type: bind
+        source: '${NGINX_TLS_DIRECTORY:-./federated/secrets/local-dev/ingress}'
+        target: /run/tls
+        read_only: true
+        bind: {create_host_path: false}
+      - type: bind
+        source: ./federated/secrets/local-dev/monitor/ca.pem
+        target: /run/monitor-ca.pem
+        read_only: true
+        bind: {create_host_path: false}
+    depends_on:
+      app-backend: {condition: service_healthy}
+      app-frontend: {condition: service_started}
+    healthcheck:
+      test: [CMD, nginx, -t, -c, /etc/nginx/member4.conf]
+      interval: 30s
+      timeout: 5s
+      retries: 3

@@ -29,6 +29,7 @@ services:
       retries: 10
     restart: 'no'
   app-backend:
+    image: sanjeevani-member4-app-backend:latest
     command: [uvicorn, instrumented:app, --host, '0.0.0.0', --port, '8000', --no-access-log]
     read_only: true
     cap_drop: [ALL]
@@ -37,6 +38,7 @@ services:
     volumes:
       - ./monitoring/runtime:/opt/member4-runtime:ro
       - ./optimization:/opt/member4-library/optimization:ro
+      - ./outputs/operations:/run/member4-operations:ro
       - type: bind
         source: ./federated/secrets/local-dev/metrics-token
         target: /run/secrets/metrics-token
