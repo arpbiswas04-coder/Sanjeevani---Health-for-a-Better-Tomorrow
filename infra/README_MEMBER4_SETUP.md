@@ -1,7 +1,10 @@
-# Sanjeevani — Member 4 Setup Guide
+# Sanjeevani — infra/ayan Branch Setup Guide
 
 Step-by-step setup for the optimization, federated-learning, Docker, monitoring
 and recovery implementation on branch **infra/ayan**.
+
+Upload this file to `infra/README_MEMBER4_SETUP.md` on branch `infra/ayan`.
+Keep the existing README unchanged. Relative links assume this location.
 
 All Member 4 code lives inside `infra/`. This guide uses **Windows PowerShell,
 Python 3.12 (64-bit), and Docker Desktop with Linux containers**. Run project
@@ -381,3 +384,108 @@ remain production release blockers. Cloud deployment, hosted Member 4 CI,
 external notification delivery and real off-host storage are not activated.
 The patched Alertmanager's recorded HIGH/CRITICAL scan passed; this is not a
 blanket security guarantee. Use synthetic data for this local demonstration.
+
+
+## Instructions for Codex, Antigravity and other coding assistants
+
+### Context
+
+- Repository: https://github.com/arpbiswas04-coder/Sanjeevani---Health-for-a-Better-Tomorrow
+- Branch: `infra/ayan`.
+- Working directory for project commands: `<repository>/infra`.
+- Target: local synthetic demonstration on Windows with Linux Docker containers.
+- Read applicable repository instructions before making changes.
+- Preserve existing changes. Keep Member 4 edits inside `infra/`.
+- This guide does not authorize commits, pushes, external deployment or changes
+  to teammate application code.
+
+### Ordered execution checklist
+
+1. Inspect the current directory, branch and Git status. Do not discard local
+   work to switch branches. Confirm the implementation has been pushed: uploading
+   this README alone does not publish its referenced files.
+2. Check Git, Python 3.12, Docker Compose and the running Docker server. A client
+   version alone is insufficient. Report missing prerequisites before proceeding.
+3. Create only missing virtual environments. Install `.[transport]` in `.venv`;
+   install CPU PyTorch then `.[federation]` in `.venv-federated`. Run `pip check`
+   separately. Do not combine the environments.
+4. Check whether `.env` and `federated/secrets/local-dev/manifest.json` exist
+   without printing their contents. Provision only when absent. If a credential
+   directory exists without a manifest, report incomplete provisioning rather
+   than deleting or replacing it. Preserve initialized database credentials.
+5. Run the missing-secret helper. Check certificate validity; an expired bundle
+   needs coordinated replacement of certificate mounts, not disabled TLS checks.
+6. Define the Docker executable and all six Compose files exactly as in step 5.
+   Validate with `config --quiet`. Do not print resolved Compose configuration
+   into shared logs because environment values may contain secrets.
+7. Build/start the stack and inspect actual status. After a scrape interval,
+   run both acceptance scripts and inspect their saved JSON reports.
+8. If requested, run the ten synthetic demonstrations and three training clients.
+   Confirm server aggregation; client submission alone does not prove it.
+9. Run backup/recovery demonstrations when requested. Preserve source databases,
+   existing backups, keys, model checkpoints and privacy accounting.
+10. Report URLs, evidence paths, actual failures and next actions. Do not label
+    missing checks as passed or describe local tests as hosted CI execution.
+
+### Required checkout contents
+
+The checkout needs the repository's `frontend/` and `backend/` build inputs as
+well as these Member 4 files:
+
+```text
+infra/
+  pyproject.toml
+  compose.yaml
+  compose.team.yaml
+  compose.monitoring.yaml
+  compose.grafana.yaml
+  compose.observability.yaml
+  compose.alerts.yaml
+  deployment/
+    prepare_local_env.py
+    prepare_demo_secrets.py
+    start-local.ps1
+    verify_local.py
+    verify_local_alerts.py
+  docker/
+    Dockerfile.backend
+    Dockerfile.frontend
+    Dockerfile.federation
+    Dockerfile.alertmanager
+  optimization/
+  federated/
+  monitoring/
+  ci-cd/check-local.ps1
+```
+
+Do not copy only `infra/` and expect the complete team stack to build. If files
+are missing, obtain the correct branch revision instead of inventing services.
+
+### Acceptance criteria
+
+- Docker server is reachable; Compose configuration validates.
+- Nine normal services run; services with healthchecks become healthy.
+- All ten runtime acceptance checks pass.
+- Local alert firing and resolved delivery both pass.
+- Requested synthetic demonstrations pass and requested training aggregates.
+- Existing credentials/data are preserved; no secrets appear in Git or shared logs.
+
+These criteria cover local demonstration behavior, not production security,
+clinical correctness or cloud/off-host readiness.
+
+### Prohibited shortcuts
+
+Do not prune volumes, run `down --volumes`, reset privacy ledgers, overwrite
+`.env`, share private keys, disable TLS verification or suppress scanner findings.
+Do not change execution policies, activate root workflows, register scheduled
+jobs or configure external services merely to make local setup succeed.
+
+### Copyable setup prompt
+
+> Set up Sanjeevani branch `infra/ayan` on this PC by following
+> `infra/README_MEMBER4_SETUP.md`. Inspect repository instructions, Git status and
+> prerequisites first. Work from `infra`, use the two separate Python environments,
+> preserve existing changes/secrets/data and start the local Docker stack. Run
+> runtime and local-alert acceptance checks. Do not modify teammate code, commit,
+> push, erase volumes or deploy externally. Report actual results, service URLs
+> and evidence files; explain any failed prerequisite without claiming completion.
