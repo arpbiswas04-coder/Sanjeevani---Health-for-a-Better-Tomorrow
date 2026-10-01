@@ -1,9 +1,12 @@
-# Sanjeevani — Member 4 Setup Guide
+# Sanjeevani â€” Member 4 Setup Guide
 
 Step-by-step setup for the optimization, federated-learning, Docker, monitoring
 and recovery implementation on branch **infra/ayan**.
 
-All Member 4 code lives inside `infra/`. This guide uses **Windows PowerShell,
+Member 4 runtime code lives inside `infra/`; active CI/deployment definitions now
+live in root `.github/workflows/` under the latest authorized scope.
+See [completion matrix, HTTPS and deployment guide](docs/completion-and-deployment.md)
+for the October 1 additions. This guide uses **Windows PowerShell,
 Python 3.12 (64-bit), and Docker Desktop with Linux containers**. Run project
 commands from `infra/`, not the repository root.
 
@@ -86,7 +89,7 @@ py -3.12 -m venv .venv-federated
 Stop if installation fails. Dependencies are specified in
 [pyproject.toml](pyproject.toml). Explicit executable paths avoid activation scripts.
 
-## 4. Generate credentials — first setup only
+## 4. Generate credentials â€” first setup only
 
 Run under your own Windows account:
 
@@ -173,7 +176,7 @@ need to change the machine's execution policy. Training clients start separately
 | Prometheus | http://127.0.0.1:9090 |
 | Alertmanager | http://127.0.0.1:9093 |
 | Local alert counts | http://127.0.0.1:9094/counts |
-| Federation | https://127.0.0.1:8443 — client certificate required |
+| Federation | https://127.0.0.1:8443 â€” client certificate required |
 
 PostgreSQL uses local port 5432, database/user `sanjeevani`, and the password in
 your private `.env`. Redis is only available inside the Docker network.
@@ -329,9 +332,10 @@ If scripts are blocked, use:
 .\.venv-federated\Scripts\python.exe -m unittest discover -s monitoring/tests -q
 ```
 
-`ci-cd/member4-ci.yml` is an inactive GitHub Actions template. Activation requires
-an authorized root `.github/workflows/` change. Local tests do not replace image
-or dependency scans. See [security scanning](docs/security-scanning.md).
+Root `.github/workflows/member4-ci.yml` is now the active workflow location;
+`ci-cd/member4-ci.yml` is a reference copy. Hosted execution requires committing
+and pushing the reviewed files. Security failures block release. See the
+[deployment guide](docs/completion-and-deployment.md).
 
 ## Troubleshooting
 
@@ -345,7 +349,7 @@ or dependency scans. See [security scanning](docs/security-scanning.md).
 | Permission denied | Provision from your own account; check Docker file access without making keys public. |
 | Expired certificates | Follow the fresh-bundle/mount procedure; do not disable TLS. |
 | Database authentication fails | Check whether `.env` changed after initialization; preserve the volume. |
-| Port conflict | Check 3000, 5432, 8000, 8080, 8443 and 9090–9094. |
+| Port conflict | Check 3000, 5432, 8000, 8080, 8443 and 9090â€“9094. |
 | First monitoring check fails | Wait for a scrape interval, inspect Targets/logs, then retry. |
 | Insufficient federation participants | Start all three clients. Idle rounds without clients are expected. |
 | Empty prediction panels | Actual backend model inference has not supplied observations. |

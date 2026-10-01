@@ -1,4 +1,9 @@
-# Local release setup — October 1, 2026
+# Local release setup â€” October 1, 2026
+
+> Historical baseline below. October 1 implementation now includes root CI and
+> guarded deployment workflows, TLS ingress, authenticated masking and storage
+> adapters. See [current completion guide](completion-and-deployment.md). Hosted
+> execution and external deployment have not been performed.
 
 Selected target: local demonstration only. All changes remain inside infra, as
 explicitly reconfirmed. Cloud credentials and real off-host storage are outside
