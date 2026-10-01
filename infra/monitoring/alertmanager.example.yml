@@ -1,0 +1,22 @@
+# Inactive contract example. Resolve the team-owned receiver and its TLS/auth
+# requirements before loading; the .invalid domain is intentionally unusable.
+global:
+  resolve_timeout: 5m
+route:
+  receiver: engineering
+  group_by: [alertname, instance]
+  group_wait: 30s
+  group_interval: 5m
+  repeat_interval: 4h
+  routes:
+    - receiver: on-call
+      matchers: ['severity="critical"']
+receivers:
+  - name: engineering
+    webhook_configs:
+      - url: https://receiver.invalid/engineering
+        send_resolved: true
+  - name: on-call
+    webhook_configs:
+      - url: https://receiver.invalid/on-call
+        send_resolved: true

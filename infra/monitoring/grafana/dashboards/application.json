@@ -1,0 +1,258 @@
+{
+  "uid": "sanjeevani-application",
+  "title": "Sanjeevani Application and Infrastructure",
+  "schemaVersion": 39,
+  "version": 1,
+  "editable": false,
+  "refresh": "15s",
+  "time": {
+    "from": "now-1h",
+    "to": "now"
+  },
+  "description": "Requires compose.observability.yaml. Optimizer/prediction series are absent until calls execute in the instrumented backend process. No observations is not healthy zero.",
+  "panels": [
+    {
+      "id": 1,
+      "title": "Backend metrics availability",
+      "type": "stat",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "federation-prometheus"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "up{job=\"backend\"}"
+        }
+      ],
+      "gridPos": {
+        "x": 0,
+        "y": 0,
+        "w": 8,
+        "h": 8
+      },
+      "fieldConfig": {
+        "defaults": {
+          "noValue": "No observations"
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 2,
+      "title": "API 5xx rate",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "federation-prometheus"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum(rate(sanjeevani_operation_calls_total{kind=\"http\",status=\"5xx\"}[5m]))"
+        }
+      ],
+      "gridPos": {
+        "x": 8,
+        "y": 0,
+        "w": 8,
+        "h": 8
+      },
+      "fieldConfig": {
+        "defaults": {
+          "noValue": "No observations"
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 3,
+      "title": "API p95 duration",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "federation-prometheus"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "histogram_quantile(0.95, sum by(le) (rate(sanjeevani_operation_duration_seconds_bucket{kind=\"http\"}[5m])))"
+        }
+      ],
+      "gridPos": {
+        "x": 16,
+        "y": 0,
+        "w": 8,
+        "h": 8
+      },
+      "fieldConfig": {
+        "defaults": {
+          "noValue": "No observations"
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 4,
+      "title": "PostgreSQL availability",
+      "type": "stat",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "federation-prometheus"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sanjeevani_dependency_up{service=\"postgres\"}"
+        }
+      ],
+      "gridPos": {
+        "x": 0,
+        "y": 8,
+        "w": 8,
+        "h": 8
+      },
+      "fieldConfig": {
+        "defaults": {
+          "noValue": "No observations"
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 5,
+      "title": "Database connections",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "federation-prometheus"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sanjeevani_postgres_connections"
+        }
+      ],
+      "gridPos": {
+        "x": 8,
+        "y": 8,
+        "w": 8,
+        "h": 8
+      },
+      "fieldConfig": {
+        "defaults": {
+          "noValue": "No observations"
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 6,
+      "title": "Redis availability",
+      "type": "stat",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "federation-prometheus"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sanjeevani_dependency_up{service=\"redis\"}"
+        }
+      ],
+      "gridPos": {
+        "x": 16,
+        "y": 8,
+        "w": 8,
+        "h": 8
+      },
+      "fieldConfig": {
+        "defaults": {
+          "noValue": "No observations"
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 7,
+      "title": "Redis memory bytes",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "federation-prometheus"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sanjeevani_redis_used_memory_bytes"
+        }
+      ],
+      "gridPos": {
+        "x": 0,
+        "y": 16,
+        "w": 8,
+        "h": 8
+      },
+      "fieldConfig": {
+        "defaults": {
+          "noValue": "No observations"
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 8,
+      "title": "Optimizer mean duration",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "federation-prometheus"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by(name) (rate(sanjeevani_operation_duration_seconds_sum{kind=\"optimizer\"}[5m])) / sum by(name) (rate(sanjeevani_operation_duration_seconds_count{kind=\"optimizer\"}[5m]))"
+        }
+      ],
+      "gridPos": {
+        "x": 8,
+        "y": 16,
+        "w": 8,
+        "h": 8
+      },
+      "fieldConfig": {
+        "defaults": {
+          "noValue": "No observations"
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 9,
+      "title": "Prediction mean duration \u2014 requires Member 3 integration",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "federation-prometheus"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum(rate(sanjeevani_operation_duration_seconds_sum{kind=\"prediction\"}[5m])) / sum(rate(sanjeevani_operation_duration_seconds_count{kind=\"prediction\"}[5m]))"
+        }
+      ],
+      "gridPos": {
+        "x": 16,
+        "y": 16,
+        "w": 8,
+        "h": 8
+      },
+      "fieldConfig": {
+        "defaults": {
+          "noValue": "No observations"
+        },
+        "overrides": []
+      }
+    }
+  ]
+}

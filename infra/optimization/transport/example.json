@@ -1,0 +1,25 @@
+{
+  "request_id": "transport-demo-1",
+  "inventory_snapshot_id": "synthetic-snapshot-1",
+  "medicine_id": "med-22",
+  "quantity_unit": "tablet",
+  "sources": [
+    {"facility_id": "warehouse-a", "safe_surplus": 100, "batches": [
+      {"batch_id": "batch-a1", "available_quantity": 60, "expiry_days": 30},
+      {"batch_id": "batch-a2", "available_quantity": 40, "expiry_days": 90}
+    ]},
+    {"facility_id": "warehouse-b", "safe_surplus": 100, "batches": [
+      {"batch_id": "batch-b1", "available_quantity": 100, "expiry_days": 60}
+    ]}
+  ],
+  "destinations": [
+    {"facility_id": "phc-a", "required_quantity": 70},
+    {"facility_id": "phc-b", "required_quantity": 30}
+  ],
+  "lanes": [
+    {"source": "warehouse-a", "destination": "phc-a", "capacity": 100, "unit_cost_paise": 1, "fixed_dispatch_cost_paise": 1000},
+    {"source": "warehouse-a", "destination": "phc-b", "capacity": 100, "unit_cost_paise": 1, "fixed_dispatch_cost_paise": 1000},
+    {"source": "warehouse-b", "destination": "phc-a", "capacity": 100, "unit_cost_paise": 4, "fixed_dispatch_cost_paise": 10},
+    {"source": "warehouse-b", "destination": "phc-b", "capacity": 100, "unit_cost_paise": 4, "fixed_dispatch_cost_paise": 10}
+  ]
+}

@@ -1,0 +1,18 @@
+# Use after compose.team.yaml and compose.monitoring.yaml.
+services:
+  prometheus:
+    command:
+      - --config.file=/etc/prometheus/team.yml
+      - --storage.tsdb.path=/tmp/prometheus
+      - --storage.tsdb.retention.time=24h
+      - --storage.tsdb.retention.size=128MB
+      - --web.listen-address=0.0.0.0:9090
+    volumes:
+      - ./monitoring/prometheus/team.yml:/etc/prometheus/team.yml:ro
+      - ./monitoring/prometheus/application-alerts.yml:/etc/prometheus/application-alerts.yml:ro
+      - type: bind
+        source: ./federated/secrets/local-dev/metrics-token
+        target: /run/secrets/metrics-token
+        read_only: true
+        bind:
+          create_host_path: false

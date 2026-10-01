@@ -1,5 +1,14 @@
 # Security & Compliance Architecture
 
+The [CI scanning template](../docs/security-scanning.md) now includes independent
+dependency audits and a federation image vulnerability scan. It remains inactive
+under `infra/ci-cd/`. Local scans ran; unresolved findings are in
+[security findings](../docs/security-findings.md).
+
+Implemented federation component: [signed update admission](../docs/federated-authentication.md)
+with per-node HMAC keys and replay protection. Its local mutual-TLS service ran
+successfully. Production controls and the broader guidelines below remain pending.
+
 Guidelines for securing Sanjeevani Grid infrastructure:
 - Principle of Least Privilege (PoLP) across Docker and cloud IAM.
 - Zero-trust network segmentation between Edge nodes, AI engines, and Core DB.

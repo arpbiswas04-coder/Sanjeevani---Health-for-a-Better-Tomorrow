@@ -1,0 +1,13 @@
+{
+  "policy_version": "blueprint-example-v1",
+  "normalization_version": "prototype-normalized-v1",
+  "max_age_seconds": 3600,
+  "weights": {
+    "disease_growth": 0.30,
+    "resource_shortage": 0.25,
+    "bed_pressure": 0.15,
+    "workforce_shortage": 0.10,
+    "vulnerable_population": 0.10,
+    "transport_disruption": 0.10
+  }
+}

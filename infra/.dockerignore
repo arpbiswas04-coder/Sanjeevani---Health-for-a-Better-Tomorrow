@@ -1,0 +1,12 @@
+.venv*
+**/__pycache__
+**/*.pyc
+**/*.egg-info
+.env*
+federated/secrets
+federated/checkpoints
+federated/backups
+outputs
+build
+dist
+.git

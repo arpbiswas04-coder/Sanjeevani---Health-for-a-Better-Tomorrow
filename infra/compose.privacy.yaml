@@ -1,0 +1,8 @@
+# Explicit durable synthetic workflow. Initialize the new ledger once; never reset it to bypass a budget.
+services:
+  federation-privacy-demo:
+    command: [privacy, --ledger, federated/checkpoints/privacy.sqlite, --rounds, '1']
+    volumes:
+      - privacy-budget:/app/infra/federated/checkpoints
+volumes:
+  privacy-budget:

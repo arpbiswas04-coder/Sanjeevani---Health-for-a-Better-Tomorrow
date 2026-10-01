@@ -1,0 +1,77 @@
+{
+  "baseline": {
+    "request_id": "demo-request-001",
+    "inventory_snapshot_id": "synthetic-snapshot-001",
+    "shortage_facility": "fac-10",
+    "medicine_id": "med-22",
+    "quantity_unit": "tablet",
+    "required_quantity": 1200,
+    "candidate_sources": [
+      {
+        "facility_id": "fac-11",
+        "batch_id": "batch-11-a",
+        "safe_surplus": 800,
+        "distance_km": 25,
+        "expiry_days": 90,
+        "transport_cost_per_unit_paise": 100
+      },
+      {
+        "facility_id": "fac-12",
+        "batch_id": "batch-12-a",
+        "safe_surplus": 700,
+        "distance_km": 40,
+        "expiry_days": 60,
+        "transport_cost_per_unit_paise": 150
+      }
+    ]
+  },
+  "baseline_periods": [
+    {
+      "day": 0,
+      "demand": 1500
+    },
+    {
+      "day": 1,
+      "demand": 900,
+      "arrivals": [
+        {
+          "facility_id": "fac-11",
+          "batch_id": "resupply-11-b",
+          "safe_surplus": 500,
+          "expiry_days": 6
+        }
+      ]
+    },
+    {
+      "day": 2,
+      "demand": 0
+    }
+  ],
+  "scenarios": [
+    {
+      "scenario_id": "supplier-one-day-late",
+      "periods": [
+        {
+          "day": 0,
+          "demand": 1500
+        },
+        {
+          "day": 1,
+          "demand": 900
+        },
+        {
+          "day": 2,
+          "demand": 0,
+          "arrivals": [
+            {
+              "facility_id": "fac-11",
+              "batch_id": "resupply-11-b",
+              "safe_surplus": 500,
+              "expiry_days": 5
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,90 @@
+# Existing team scaffolds only: no claim that Member 2/3 business APIs are ready.
+# Merge after infra/compose.yaml. Password must be a generated URL-safe hex secret.
+services:
+  app-postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: sanjeevani
+      POSTGRES_DB: sanjeevani
+      POSTGRES_PASSWORD: '${MEMBER4_DB_PASSWORD:?Set MEMBER4_DB_PASSWORD in infra/.env}'
+    ports:
+      - '127.0.0.1:5432:5432'
+    volumes:
+      - app-postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: [CMD-SHELL, 'pg_isready -U sanjeevani -d sanjeevani']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: 'no'
+  app-redis:
+    image: redis:7-alpine
+    command: [redis-server, --appendonly, 'yes']
+    volumes:
+      - app-redis-data:/data
+    healthcheck:
+      test: [CMD, redis-cli, ping]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    restart: 'no'
+  app-backend:
+    command: [uvicorn, instrumented:app, --host, '0.0.0.0', --port, '8000', --no-access-log]
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    tmpfs: [/tmp]
+    volumes:
+      - ./monitoring/runtime:/opt/member4-runtime:ro
+      - ./optimization:/opt/member4-library/optimization:ro
+      - type: bind
+        source: ./federated/secrets/local-dev/metrics-token
+        target: /run/secrets/metrics-token
+        read_only: true
+        bind:
+          create_host_path: false
+    build:
+      context: ../backend
+      dockerfile: ../infra/docker/Dockerfile.backend
+    environment:
+      APP_ENV: development
+      PYTHONPATH: /opt/member4-runtime:/opt/member4-library:/app
+      MEMBER4_METRICS_TOKEN_FILE: /run/secrets/metrics-token
+      POSTGRES_DB: sanjeevani
+      POSTGRES_USER: sanjeevani
+      POSTGRES_PASSWORD: '${MEMBER4_DB_PASSWORD:?Set MEMBER4_DB_PASSWORD}'
+      DATABASE_URL: 'postgresql+asyncpg://sanjeevani:${MEMBER4_DB_PASSWORD:?Set MEMBER4_DB_PASSWORD}@app-postgres:5432/sanjeevani'
+      REDIS_URL: redis://app-redis:6379/0
+      JWT_SECRET: '${MEMBER4_JWT_SECRET:?Set MEMBER4_JWT_SECRET}'
+      JWT_REFRESH_SECRET: '${MEMBER4_JWT_REFRESH_SECRET:?Set MEMBER4_JWT_REFRESH_SECRET}'
+      BACKEND_CORS_ORIGINS: '["http://127.0.0.1:8080","http://localhost:8080"]'
+    depends_on:
+      app-postgres:
+        condition: service_healthy
+      app-redis:
+        condition: service_healthy
+    ports:
+      - '127.0.0.1:8000:8000'
+    healthcheck:
+      test: [CMD, python, -c, "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/v1/health',timeout=3)"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+    restart: 'no'
+  app-frontend:
+    build:
+      context: ../frontend
+      dockerfile: ../infra/docker/Dockerfile.frontend
+      args:
+        VITE_BACKEND_URL: http://127.0.0.1:8000
+    ports:
+      - '127.0.0.1:8080:80'
+    volumes:
+      - ./nginx/frontend-local.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      app-backend:
+        condition: service_healthy
+    restart: 'no'
+volumes:
+  app-postgres-data:
+  app-redis-data:

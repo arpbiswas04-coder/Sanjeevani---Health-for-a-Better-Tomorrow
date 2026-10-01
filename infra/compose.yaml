@@ -1,0 +1,102 @@
+name: sanjeevani-member4
+
+x-runtime: &runtime
+  image: sanjeevani-member4-federation:dev
+  build:
+    context: .
+    dockerfile: docker/Dockerfile.federation
+    args:
+      MEMBER4_UID: ${MEMBER4_UID:-1000}
+  read_only: true
+  cap_drop: [ALL]
+  security_opt: [no-new-privileges:true]
+  init: true
+  tmpfs:
+    - /tmp:rw,noexec,nosuid,size=256m
+  pids_limit: 128
+  mem_limit: 2g
+  cpus: 2
+  logging:
+    driver: json-file
+    options:
+      max-size: 10m
+      max-file: '3'
+
+x-client: &client
+  <<: *runtime
+  profiles: [training]
+  environment:
+    FEDERATION_CLIENT_ROUNDS: '${FEDERATION_CLIENT_ROUNDS:-1}'
+    FEDERATION_CLIENT_MAX_WAIT_SECONDS: '${FEDERATION_CLIENT_MAX_WAIT_SECONDS:-600}'
+  # Shares only the server network namespace so existing localhost certificates work.
+  # Each container still receives only its own credential directory.
+  network_mode: service:federation-server
+  depends_on:
+    federation-server:
+      condition: service_healthy
+  restart: 'no'
+
+services:
+  federation-privacy-demo:
+    <<: *runtime
+    profiles: [privacy]
+    command: [privacy]
+    network_mode: none
+    restart: 'no'
+  federation-server:
+    <<: *runtime
+    command: [server]
+    ports:
+      - '127.0.0.1:8443:8443'
+    volumes:
+      - type: bind
+        source: ./federated/secrets/local-dev/server
+        target: /run/federation
+        read_only: true
+        bind:
+          create_host_path: false
+      - checkpoints:/app/infra/federated/checkpoints
+    healthcheck:
+      # Listener liveness only, not authenticated readiness or model correctness.
+      test: [CMD, python, -c, "import socket; socket.create_connection(('127.0.0.1',8443),2).close()"]
+      interval: 15s
+      timeout: 3s
+      retries: 3
+      start_period: 15s
+    restart: 'no'
+
+  federation-client-a:
+    <<: *client
+    command: [client, district-a]
+    volumes:
+      - type: bind
+        source: ./federated/secrets/local-dev/clients/district-a
+        target: /run/federation
+        read_only: true
+        bind:
+          create_host_path: false
+
+  federation-client-b:
+    <<: *client
+    command: [client, district-b]
+    volumes:
+      - type: bind
+        source: ./federated/secrets/local-dev/clients/district-b
+        target: /run/federation
+        read_only: true
+        bind:
+          create_host_path: false
+
+  federation-client-c:
+    <<: *client
+    command: [client, district-c]
+    volumes:
+      - type: bind
+        source: ./federated/secrets/local-dev/clients/district-c
+        target: /run/federation
+        read_only: true
+        bind:
+          create_host_path: false
+
+volumes:
+  checkpoints:

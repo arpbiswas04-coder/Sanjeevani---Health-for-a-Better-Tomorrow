@@ -1,0 +1,18 @@
+groups:
+  - name: application
+    rules:
+      - alert: BackendMetricsUnavailable
+        expr: up{job="backend"} == 0
+        for: 1m
+        labels: {severity: critical}
+        annotations: {summary: Backend metrics unavailable; inspect application and scrape credentials}
+      - alert: DatabaseOrRedisUnavailable
+        expr: sanjeevani_dependency_up == 0
+        for: 1m
+        labels: {severity: critical}
+        annotations: {summary: Local dependency probe failed}
+      - alert: BackendServerErrors
+        expr: sum(rate(sanjeevani_operation_calls_total{kind="http",status="5xx"}[5m])) > 0.1
+        for: 2m
+        labels: {severity: warning}
+        annotations: {summary: Backend server-error rate above demo threshold; tune against agreed SLO}

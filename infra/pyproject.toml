@@ -1,0 +1,29 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "sanjeevani-member4"
+version = "0.1.0"
+description = "Resource optimization foundations for Sanjeevani"
+requires-python = ">=3.11"
+dependencies = []
+
+[project.optional-dependencies]
+transport = ["ortools==9.15.6755"]
+federation = ["flwr==1.39.0", "torch==2.14.0", "protobuf==6.33.5", "cryptography==46.0.7", "click==8.5.0"]
+
+[project.scripts]
+sanjeevani-redistribute = "optimization.redistribution.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["optimization*", "federated*"]
+
+[tool.setuptools.package-data]
+"optimization.simulation" = ["example.json", "timeline-example.json", "replenishment-example.json", "comparison-example.json", "resilience-example.json"]
+"optimization.ambulance" = ["example.json"]
+"optimization.emergency" = ["example.json", "policy.example.json", "resource-example.json"]
+"optimization.workforce" = ["example.json"]
+"optimization.procurement" = ["example.json"]
+"federated" = ["configs/demo.json"]
+"federated.privacy" = ["policy.json"]

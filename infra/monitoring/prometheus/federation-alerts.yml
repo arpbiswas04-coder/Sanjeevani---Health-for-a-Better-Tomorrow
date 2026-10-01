@@ -1,0 +1,23 @@
+groups:
+  - name: federation
+    rules:
+      - alert: FederationScrapeUnavailable
+        expr: up{job="federation"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: Federation metrics unavailable; check server and certificates
+      - alert: FederationRoundStalled
+        expr: time() - (sanjeevani_federation_last_round_closed_timestamp_seconds > 0 or sanjeevani_federation_process_start_time_seconds) > 300
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: No round closed within five minutes (default 120-second schedule)
+      - alert: FederationInsufficientParticipants
+        expr: increase(sanjeevani_federation_rounds_insufficient_total[10m]) >= 2
+        labels:
+          severity: warning
+        annotations:
+          summary: Multiple rounds lacked enough valid participants
