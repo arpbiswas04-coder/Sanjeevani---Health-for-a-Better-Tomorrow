@@ -1,1 +1,1 @@
-"""Package initialization."""
+"""Model explainability and feature attribution utilities."""

@@ -1,1 +1,1 @@
-"""Package initialization."""
+"""Disease intelligence and outbreak early-warning models."""
