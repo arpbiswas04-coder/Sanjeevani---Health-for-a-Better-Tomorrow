@@ -2,18 +2,15 @@
 
 from __future__ import annotations
 
-from datetime import datetime
-from typing import Literal
+from datetime import date
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
-
-RiskLevel = Literal[
-    "low",
-    "moderate",
-    "high",
-    "critical",
-]
+from ai.common.types import (
+    RiskLevel,
+    ensure_utc_iso8601,
+    ensure_uuid_v4,
+)
 
 
 class ConsumptionRecord(BaseModel):
@@ -27,16 +24,8 @@ class ConsumptionRecord(BaseModel):
     @field_validator("timestamp")
     @classmethod
     def validate_timestamp(cls, value: str) -> str:
-        parsed = datetime.fromisoformat(
-            value.replace("Z", "+00:00")
-        )
-
-        if parsed.tzinfo is None:
-            raise ValueError(
-                "timestamp must include timezone information."
-            )
-
-        return parsed.isoformat()
+        """Require a UTC ISO-8601 timestamp."""
+        return ensure_utc_iso8601(value)
 
 
 class ProcurementRequest(BaseModel):
@@ -56,6 +45,12 @@ class ProcurementRequest(BaseModel):
         le=90,
         default=7,
     )
+
+    @field_validator("facility_id")
+    @classmethod
+    def validate_facility_id(cls, value: str) -> str:
+        """Require a canonical UUID v4 facility identifier."""
+        return ensure_uuid_v4(value)
 
 
 class ProcurementForecastPoint(BaseModel):
@@ -103,3 +98,34 @@ class ProcurementResponse(BaseModel):
     explanation: list[str]
 
     generated_at: str
+
+    @field_validator("facility_id")
+    @classmethod
+    def validate_facility_id(cls, value: str) -> str:
+        """Require a canonical UUID v4 facility identifier."""
+        return ensure_uuid_v4(value)
+
+    @field_validator("generated_at")
+    @classmethod
+    def validate_generated_at(cls, value: str) -> str:
+        """Require a UTC ISO-8601 generation timestamp."""
+        return ensure_utc_iso8601(value)
+
+    @field_validator("expected_shortage_date")
+    @classmethod
+    def validate_shortage_date(
+        cls,
+        value: str | None,
+    ) -> str | None:
+        """Validate an optional YYYY-MM-DD shortage date."""
+        if value is None:
+            return None
+
+        try:
+            date.fromisoformat(value)
+        except ValueError as exc:
+            raise ValueError(
+                "Invalid date. Expected YYYY-MM-DD."
+            ) from exc
+
+        return value

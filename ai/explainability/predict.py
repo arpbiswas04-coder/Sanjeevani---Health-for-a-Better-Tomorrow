@@ -1,63 +1,76 @@
-"""Inference service for model explanations."""
+"""Prediction and inference helpers for model explainability."""
 
 from __future__ import annotations
 
-from ai.common.base_model import BasePredictor
+from typing import Any, Mapping
 
-from .config import DEFAULT_CONFIG
-from .features import calculate_attributions
-from .schema import (
-    ExplanationRequest,
-    ExplanationResponse,
-    FeatureContribution,
-)
+from ai.common.base_model import BasePredictor
+from ai.explainability.config import DEFAULT_CONFIG
+from ai.explainability.data import validate_features
+from ai.explainability.features import calculate_attributions
+from ai.explainability.schema import ExplanationRequest
 
 
 class ExplainabilityPredictor(BasePredictor):
-    """Schema-validated feature attribution service."""
+    """Generate feature-level explanations for predictions.
 
-    def predict(self, payload: dict) -> dict:
-        """Generate a transparent feature attribution response."""
+    A tree-based model can be supplied at runtime. When supplied,
+    SHAP TreeExplainer is used. Without a model, the deterministic
+    baseline-relative attribution remains available for compatibility.
+    """
+
+    def __init__(self, model: Any | None = None) -> None:
+        self.model = model
+
+    def predict(
+        self,
+        payload: Mapping[str, Any],
+    ) -> dict[str, Any]:
+        """Generate an explanation for a prediction payload."""
         request = ExplanationRequest.model_validate(payload)
+        features = validate_features(request.features)
 
         contributions = calculate_attributions(
-            request.features,
+            features,
             baseline=0.0,
+            model=self.model,
         )
 
-        ranked = sorted(
+        contributions = sorted(
             contributions,
             key=lambda item: abs(float(item["contribution"])),
             reverse=True,
         )[: DEFAULT_CONFIG.top_k]
 
-        contribution_models = [
-            FeatureContribution(**item)
-            for item in ranked
-        ]
+        method = (
+            "shap_tree_explainer"
+            if self.model is not None
+            else "baseline_relative_attribution"
+        )
 
         explanation = [
             (
-                f"{item.feature} contributed "
-                f"{item.contribution:.4f} "
-                f"({item.direction})"
+                f"{item['feature']}: "
+                f"{item['direction']} contribution "
+                f"({float(item['contribution']):.6f})"
             )
-            for item in contribution_models
+            for item in contributions
         ]
 
-        response = ExplanationResponse(
-            success=True,
-            model_version=DEFAULT_CONFIG.model_version,
-            prediction=request.prediction,
-            baseline=0.0,
-            contributions=contribution_models,
-            method="baseline_relative_attribution",
-            explanation=explanation,
-        )
-
-        return response.model_dump()
+        return {
+            "success": True,
+            "model_version": DEFAULT_CONFIG.model_version,
+            "prediction": request.prediction,
+            "baseline": 0.0,
+            "contributions": contributions,
+            "method": method,
+            "explanation": explanation,
+        }
 
 
-def explain_prediction(payload: dict) -> dict:
-    """Convenience explanation function."""
-    return ExplainabilityPredictor().predict(payload)
+def explain_prediction(
+    payload: Mapping[str, Any],
+    model: Any | None = None,
+) -> dict[str, Any]:
+    """Convenience wrapper for explanation inference."""
+    return ExplainabilityPredictor(model=model).predict(payload)

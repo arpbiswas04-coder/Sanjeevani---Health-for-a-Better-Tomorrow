@@ -2,19 +2,15 @@
 
 from __future__ import annotations
 
-from datetime import datetime
-from typing import Literal
-from uuid import UUID
+from datetime import date
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
-
-RiskLevel = Literal[
-    "low",
-    "moderate",
-    "high",
-    "critical",
-]
+from ai.common.types import (
+    RiskLevel,
+    ensure_utc_iso8601,
+    ensure_uuid_v4,
+)
 
 
 class InventorySimulationPoint(BaseModel):
@@ -45,7 +41,7 @@ class InventorySimulationRequest(BaseModel):
 
     predicted_demand: list[float]
     expected_incoming: list[float] = Field(
-        default_factory=list
+        default_factory=list,
     )
 
     start_date: str
@@ -53,40 +49,15 @@ class InventorySimulationRequest(BaseModel):
 
     @field_validator("facility_id")
     @classmethod
-    def validate_facility_id(
-        cls,
-        value: str,
-    ) -> str:
-        try:
-            parsed = UUID(value)
-        except (TypeError, ValueError) as exc:
-            raise ValueError(
-                "facility_id must be a valid UUID."
-            ) from exc
-
-        if parsed.version != 4:
-            raise ValueError(
-                "facility_id must be a UUID v4."
-            )
-
-        return str(parsed)
+    def validate_facility_id(cls, value: str) -> str:
+        """Require a canonical UUID v4 facility identifier."""
+        return ensure_uuid_v4(value)
 
     @field_validator("start_date")
     @classmethod
-    def validate_start_date(
-        cls,
-        value: str,
-    ) -> str:
-        parsed = datetime.fromisoformat(
-            value.replace("Z", "+00:00")
-        )
-
-        if parsed.tzinfo is None:
-            raise ValueError(
-                "start_date must include timezone information."
-            )
-
-        return parsed.isoformat()
+    def validate_start_date(cls, value: str) -> str:
+        """Require a UTC ISO-8601 start timestamp."""
+        return ensure_utc_iso8601(value)
 
     @field_validator("predicted_demand")
     @classmethod
@@ -94,15 +65,13 @@ class InventorySimulationRequest(BaseModel):
         cls,
         value: list[float],
     ) -> list[float]:
+        """Require a non-empty non-negative demand sequence."""
         if not value:
             raise ValueError(
                 "predicted_demand cannot be empty."
             )
 
-        if any(
-            demand < 0
-            for demand in value
-        ):
+        if any(demand < 0 for demand in value):
             raise ValueError(
                 "predicted_demand cannot contain "
                 "negative values."
@@ -116,10 +85,8 @@ class InventorySimulationRequest(BaseModel):
         cls,
         value: list[float],
     ) -> list[float]:
-        if any(
-            incoming < 0
-            for incoming in value
-        ):
+        """Require non-negative incoming inventory."""
+        if any(incoming < 0 for incoming in value):
             raise ValueError(
                 "expected_incoming cannot contain "
                 "negative values."
@@ -160,3 +127,34 @@ class InventorySimulationResponse(BaseModel):
     explanation: list[str]
 
     generated_at: str
+
+    @field_validator("facility_id")
+    @classmethod
+    def validate_facility_id(cls, value: str) -> str:
+        """Require a canonical UUID v4 facility identifier."""
+        return ensure_uuid_v4(value)
+
+    @field_validator("generated_at")
+    @classmethod
+    def validate_generated_at(cls, value: str) -> str:
+        """Require a UTC ISO-8601 generation timestamp."""
+        return ensure_utc_iso8601(value)
+
+    @field_validator("expected_shortage_date")
+    @classmethod
+    def validate_shortage_date(
+        cls,
+        value: str | None,
+    ) -> str | None:
+        """Validate an optional YYYY-MM-DD shortage date."""
+        if value is None:
+            return None
+
+        try:
+            date.fromisoformat(value)
+        except ValueError as exc:
+            raise ValueError(
+                "Invalid date. Expected YYYY-MM-DD."
+            ) from exc
+
+        return value

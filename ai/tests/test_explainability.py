@@ -2,7 +2,10 @@
 
 from __future__ import annotations
 
+import numpy as np
 import pytest
+import shap
+import xgboost as xgb
 from pydantic import ValidationError
 
 from ai.explainability.data import (
@@ -34,6 +37,42 @@ def sample_features() -> dict[str, float]:
         "workforce_risk": 0.3,
         "anomaly_risk": 0.2,
     }
+
+
+def build_xgboost_model() -> xgb.Booster:
+    """Build a tiny deterministic XGBoost regression model for SHAP tests."""
+    X = np.array(
+        [
+            [0.0, 0.0],
+            [1.0, 1.0],
+            [2.0, 2.0],
+            [3.0, 3.0],
+            [4.0, 4.0],
+            [5.0, 5.0],
+        ],
+        dtype=float,
+    )
+
+    y = np.array(
+        [0.0, 2.0, 4.0, 6.0, 8.0, 10.0],
+        dtype=float,
+    )
+
+    dataset = xgb.DMatrix(
+        X,
+        label=y,
+        feature_names=["feature_a", "feature_b"],
+    )
+
+    return xgb.train(
+        {
+            "objective": "reg:squarederror",
+            "max_depth": 2,
+            "seed": 42,
+        },
+        dataset,
+        num_boost_round=5,
+    )
 
 
 class TestExplainabilitySchema:
@@ -169,6 +208,117 @@ class TestFeatureAttribution:
 
         assert negative["direction"] == "negative"
         assert negative["contribution"] < 0
+
+
+class TestSHAPIntegration:
+    """Real SHAP + XGBoost integration tests."""
+
+    def test_shap_tree_explainer_returns_values(self):
+        model = build_xgboost_model()
+
+        features = {
+            "feature_a": 2.0,
+            "feature_b": 2.0,
+        }
+
+        contributions = calculate_attributions(
+            features,
+            model=model,
+        )
+
+        assert len(contributions) == 2
+        assert {
+            item["feature"]
+            for item in contributions
+        } == {"feature_a", "feature_b"}
+
+        assert any(
+            abs(float(item["contribution"])) > 0.0
+            for item in contributions
+        )
+
+    def test_shap_values_reconstruct_model_prediction(self):
+        model = build_xgboost_model()
+
+        features = {
+            "feature_a": 2.0,
+            "feature_b": 2.0,
+        }
+
+        values = np.array(
+            [[2.0, 2.0]],
+            dtype=float,
+        )
+
+        explainer = shap.TreeExplainer(model)
+        shap_values = np.asarray(
+            explainer.shap_values(values)
+        )
+
+        expected_value = float(
+            np.asarray(
+                explainer.expected_value
+            ).reshape(-1)[0]
+        )
+
+        prediction = float(
+            model.predict(
+                xgb.DMatrix(
+                    values,
+                    feature_names=[
+                        "feature_a",
+                        "feature_b",
+                    ],
+                )
+            )[0]
+        )
+
+        reconstructed = (
+            expected_value
+            + float(shap_values[0].sum())
+        )
+
+        assert reconstructed == pytest.approx(
+            prediction,
+            rel=1e-5,
+            abs=1e-5,
+        )
+
+    def test_predictor_reports_shap_method(self):
+        model = build_xgboost_model()
+
+        result = ExplainabilityPredictor(
+            model=model,
+        ).predict(
+            {
+                "prediction": 4.0,
+                "features": {
+                    "feature_a": 2.0,
+                    "feature_b": 2.0,
+                },
+            }
+        )
+
+        assert result["success"] is True
+        assert result["method"] == "shap_tree_explainer"
+        assert len(result["contributions"]) == 2
+
+    def test_convenience_function_accepts_model(self):
+        model = build_xgboost_model()
+
+        result = explain_prediction(
+            {
+                "prediction": 4.0,
+                "features": {
+                    "feature_a": 2.0,
+                    "feature_b": 2.0,
+                },
+            },
+            model=model,
+        )
+
+        assert result["success"] is True
+        assert result["method"] == "shap_tree_explainer"
 
 
 class TestExplainabilityTraining:
