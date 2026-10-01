@@ -3,6 +3,8 @@ from sqlalchemy import engine_from_config, pool
 from alembic import context
 import os
 import sys
+import re
+from sqlalchemy.engine import make_url
 
 # Append root directory to sys.path
 sys.path.insert(0, os.path.realpath(os.path.join(os.path.dirname(__file__), '..')))
@@ -37,6 +39,12 @@ def run_migrations_offline() -> None:
     with context.begin_transaction():
         context.run_migrations()
 
+def include_object(obj, name, type_, reflected, compare_to):
+    # This PostgreSQL expression index is managed explicitly by the migration.
+    # ORM reflection cannot portably compare its geography cast; live tests check it.
+    return not (type_ == 'index' and name == 'ix_facilities_geography')
+
+
 def run_migrations_online() -> None:
     configuration = config.get_section(config.config_ini_section) or {}
     configuration["sqlalchemy.url"] = get_url()
@@ -44,11 +52,19 @@ def run_migrations_online() -> None:
         configuration,
         prefix="sqlalchemy.",
         poolclass=pool.NullPool,
+        hide_parameters=True,
     )
 
     with connectable.connect() as connection:
+        test_schema = os.environ.get('ALEMBIC_TEST_SCHEMA')
+        if test_schema:
+            if connection.dialect.name != 'postgresql' or not (make_url(get_url()).database or '').endswith('_test') or not re.fullmatch(r'test_[0-9a-f]{32}', test_schema):
+                raise RuntimeError('Test migration schema requires a disposable _test database and generated schema name')
+            connection.exec_driver_sql(f'SET search_path TO "{test_schema}", public')
+            connection.commit()
         context.configure(
-            connection=connection, target_metadata=target_metadata
+            connection=connection, target_metadata=target_metadata, render_as_batch=True,
+            version_table_schema=test_schema or None, include_object=include_object
         )
 
         with context.begin_transaction():

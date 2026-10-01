@@ -4,7 +4,7 @@ from app.core.config import settings
 
 Base = declarative_base()
 
-engine = create_async_engine(settings.get_database_url(), pool_pre_ping=True)
+engine = create_async_engine(settings.get_database_url(), pool_pre_ping=True, hide_parameters=True)
 AsyncSessionLocal = async_sessionmaker(engine, expire_on_commit=False)
 
 async def get_db():

@@ -12,6 +12,7 @@ from app.security.auth import hasher, access_token
 
 @pytest_asyncio.fixture
 async def api(tmp_path, monkeypatch):
+    monkeypatch.setattr(settings, 'APP_ENV', 'testing')
     monkeypatch.setattr(settings, 'JWT_SECRET', 'test-only-secret-that-is-at-least-32-characters')
     engine = create_async_engine('sqlite+aiosqlite:///' + str(tmp_path / 'test.db'))
     @event.listens_for(engine.sync_engine, 'connect')
@@ -21,13 +22,14 @@ async def api(tmp_path, monkeypatch):
         await conn.run_sync(Base.metadata.create_all)
     factory = async_sessionmaker(engine, expire_on_commit=False)
     async with factory.begin() as db:
-        admin = User(username='admin', password_hash=hasher.hash('correct-password'))
+        admin = User(username='admin', scope_mode='global', password_hash=hasher.hash('correct-password'))
         reader = User(username='reader', password_hash=hasher.hash('reader-password'))
         role = Role(name='admin')
         db.add_all([admin, reader, role])
         await db.flush()
         db.add(UserRole(user_id=admin.id, role_id=role.id))
-        for name in ('inventory.read', 'inventory.write', 'facility.manage'):
+        from app.security.permissions import PERMISSIONS
+        for name in PERMISSIONS:
             permission = Permission(name=name)
             db.add(permission)
             await db.flush()

@@ -22,3 +22,8 @@ def install_error_handlers(app):
     async def conflict(request: Request, exc: IntegrityError):
         return JSONResponse(status_code=409, content={'success': False,
             'error': {'code': 'CONFLICT', 'message': 'Record conflicts with existing data or database constraints'}})
+
+    @app.exception_handler(Exception)
+    async def unexpected_error(request: Request, exc: Exception):
+        return JSONResponse(status_code=500, content={'success': False,
+            'error': {'code': 'INTERNAL_ERROR', 'message': 'An unexpected server error occurred'}})

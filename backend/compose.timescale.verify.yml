@@ -1,0 +1,4 @@
+# Optional overlay for a NEW disposable verification project/volume.
+services:
+  postgres:
+    image: timescale/timescaledb-ha:pg16

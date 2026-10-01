@@ -17,9 +17,13 @@ class Record:
 
 class User(Record, Base):
     __tablename__ = 'users'
+    __table_args__ = (CheckConstraint("scope_mode IN ('restricted','global')", name='ck_user_scope'),)
     username: Mapped[str] = mapped_column(String(120), unique=True)
     password_hash: Mapped[str] = mapped_column(String(255))
     active: Mapped[bool] = mapped_column(default=True)
+    scope_mode: Mapped[str] = mapped_column(String(16), default='restricted', server_default='restricted')
+    token_version: Mapped[int] = mapped_column(default=0, server_default='0')
+    mfa_required: Mapped[bool] = mapped_column(default=False, server_default='0')
 
 
 class Role(Record, Base):
@@ -46,6 +50,15 @@ class RolePermission(Base):
 
 class Facility(Record, Base):
     __tablename__ = 'facilities'
+    __table_args__ = (CheckConstraint('latitude BETWEEN -90 AND 90'), CheckConstraint('longitude BETWEEN -180 AND 180'),)
+    facility_type: Mapped[str] = mapped_column(String(30), default='phc', server_default='phc')
+    address: Mapped[str | None] = mapped_column(String(500))
+    block_id: Mapped[UUID | None] = mapped_column(ForeignKey('blocks.id'), index=True)
+    latitude: Mapped[float | None]
+    longitude: Mapped[float | None]
+    contact: Mapped[str | None] = mapped_column(String(200))
+    version: Mapped[int] = mapped_column(default=1, server_default='1')
+    source_device: Mapped[str | None] = mapped_column(String(100))
     name: Mapped[str] = mapped_column(String(200))
     code: Mapped[str] = mapped_column(String(50), unique=True)
     active: Mapped[bool] = mapped_column(default=True)
@@ -69,10 +82,11 @@ class MedicineBatch(Record, Base):
 
 class Inventory(Record, Base):
     __tablename__ = 'medicine_inventory'
-    __table_args__ = (UniqueConstraint('facility_id', 'batch_id'), CheckConstraint('quantity >= 0'))
+    __table_args__ = (UniqueConstraint('facility_id', 'batch_id'), CheckConstraint('quantity >= 0'), CheckConstraint('reserved >= 0 AND reserved <= quantity', name='ck_inventory_reserved'))
     facility_id: Mapped[UUID] = mapped_column(ForeignKey('facilities.id'), index=True)
     batch_id: Mapped[UUID] = mapped_column(ForeignKey('medicine_batches.id'), index=True)
     quantity: Mapped[int] = mapped_column(default=0)
+    reserved: Mapped[int] = mapped_column(default=0, server_default='0')
 
 
 class StockTransaction(Record, Base):

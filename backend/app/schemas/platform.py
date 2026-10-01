@@ -4,7 +4,7 @@ from pydantic import BaseModel, ConfigDict, Field
 
 
 class Input(BaseModel):
-    model_config = ConfigDict(extra='forbid', str_strip_whitespace=True)
+    model_config = ConfigDict(extra='forbid', str_strip_whitespace=True, allow_inf_nan=False)
 
 
 class FacilityCreate(Input):
@@ -17,6 +17,7 @@ class MedicineCreate(FacilityCreate):
 
 
 class Receive(Input):
+    idempotency_key: str | None = Field(None, min_length=1, max_length=100)
     facility_id: UUID
     medicine_id: UUID
     batch_number: str = Field(min_length=1, max_length=100)
@@ -26,6 +27,7 @@ class Receive(Input):
 
 
 class Issue(Input):
+    idempotency_key: str | None = Field(None, min_length=1, max_length=100)
     facility_id: UUID
     medicine_id: UUID
     quantity: int = Field(gt=0, le=2_000_000_000, strict=True)

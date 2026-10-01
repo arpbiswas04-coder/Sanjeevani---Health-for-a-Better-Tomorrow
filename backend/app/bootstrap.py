@@ -6,7 +6,7 @@ from app.core.database import AsyncSessionLocal, engine
 from app.models import User, Role, Permission, UserRole, RolePermission
 from app.security.auth import hasher
 
-PERMISSIONS = ('inventory.read', 'inventory.write', 'facility.manage')
+from app.security.permissions import PERMISSIONS
 
 
 async def create_admin(username, password):
@@ -28,7 +28,7 @@ async def create_admin(username, password):
                 await db.flush()
             if not await db.get(RolePermission, (role.id, permission.id)):
                 db.add(RolePermission(role_id=role.id, permission_id=permission.id))
-        user = User(username=username, password_hash=hasher.hash(password))
+        user = User(username=username, scope_mode='global', password_hash=hasher.hash(password))
         db.add(user)
         await db.flush()
         db.add(UserRole(user_id=user.id, role_id=role.id))
