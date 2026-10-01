@@ -16,6 +16,8 @@ export interface ApiError {
   };
 }
 
+export * from './auth';
+
 export interface HealthStatus {
   status: string;
   service: string;

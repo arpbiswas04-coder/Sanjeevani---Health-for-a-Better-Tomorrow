@@ -1,0 +1,68 @@
+{
+  "app": {
+    "name": "Sanjeevani Grid",
+    "subtitle": "Health Resource Intelligence Platform",
+    "nationalGrid": "National Health Grid",
+    "onlineStatus": "Network Mesh Online"
+  },
+  "nav": {
+    "dashboard": "Command Dashboard",
+    "nationalDashboard": "National Command",
+    "regionalDashboard": "State & District",
+    "resourceMap": "Resource Intelligence Map",
+    "facilities": "Facilities & Hospitals",
+    "warehouses": "Warehouses & Depots",
+    "inventory": "Live Inventory & Stock",
+    "expiryTracking": "Expiry Tracker",
+    "bedAvailability": "Bed Telemetry",
+    "workforce": "Workforce & Staff",
+    "patients": "Patient Footfall",
+    "diseaseTrends": "Disease Surveillance",
+    "emergencyCommand": "Emergency Command Mode",
+    "federatedAI": "Federated AI Network",
+    "analytics": "Resource Analytics",
+    "settings": "Settings & Security",
+    "search": "Quick Search (Ctrl + K)"
+  },
+  "roles": {
+    "SUPER_ADMIN": "System Administrator",
+    "NATIONAL_ADMIN": "National Health Command",
+    "STATE_ADMIN": "State Health Authority",
+    "DISTRICT_ADMIN": "District Health Authority",
+    "FACILITY_ADMIN": "Hospital / PHC Administrator",
+    "national_officer": "National Officer",
+    "state_officer": "State Health Director",
+    "district_officer": "District Collector / CMO",
+    "facility_admin": "Hospital Administrator",
+    "logistics_coordinator": "Supply Chain Coordinator",
+    "doctor": "Chief Medical Officer"
+  },
+  "auth": {
+    "login": "Sign In",
+    "loginTitle": "Command Access Portal",
+    "loginSubtitle": "National Health Resource Intelligence & Command Platform",
+    "roleSelector": "Select Your Role",
+    "emailLabel": "Official Email / User ID",
+    "passwordLabel": "Passcode / Password",
+    "rememberMe": "Remember this terminal",
+    "forgotPassword": "Forgot passcode / Emergency access",
+    "submitting": "Authenticating...",
+    "roleMismatch": "The selected role does not match this account.",
+    "invalidCredentials": "Invalid credentials. Please verify your credentials or select a demo account below.",
+    "logout": "Sign Out",
+    "demoAccounts": "Demo Authority Credentials"
+  },
+  "status": {
+    "resilienceScore": "Grid Resilience Score",
+    "activeNodes": "Active Mesh Nodes",
+    "criticalAlerts": "Critical Shortage Alerts",
+    "syncStatus": "Real-time Edge Sync Active"
+  },
+  "actions": {
+    "switchRole": "Switch Simulated Role",
+    "emergencyMode": "Toggle Emergency Mode",
+    "searchPlaceholder": "Search facilities, drugs, beds, hospitals...",
+    "close": "Close",
+    "retry": "Try Again"
+  }
+}

@@ -1,2 +1,2 @@
-// facilities module placeholder
-export const MODULE_NAME = 'facilities';
+export * from './FacilitiesPage';
+export * from './WarehouseDashboardPage';

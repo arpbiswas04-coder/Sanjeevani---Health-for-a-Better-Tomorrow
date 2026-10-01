@@ -1,0 +1,68 @@
+{
+  "app": {
+    "name": "संजीवनी ग्रिड",
+    "subtitle": "स्वास्थ्य संसाधन खुफिया मंच",
+    "nationalGrid": "राष्ट्रीय स्वास्थ्य ग्रिड",
+    "onlineStatus": "नेटवर्क मेश ऑनलाइन"
+  },
+  "nav": {
+    "dashboard": "कमांड डैशबोर्ड",
+    "nationalDashboard": "राष्ट्रीय कमांड",
+    "regionalDashboard": "राज्य एवं जिला",
+    "resourceMap": "संसाधन खुफिया मानचित्र",
+    "facilities": "अस्पताल एवं सुविधाएं",
+    "warehouses": "गोदाम एवं भंडार डिपो",
+    "inventory": "लाइव इन्वेंटरी एवं स्टॉक",
+    "expiryTracking": "एक्सपायरी ट्रैकर",
+    "bedAvailability": "बेड उपलब्धता",
+    "workforce": "कार्यबल एवं कर्मचारी",
+    "patients": "मरीज आगमन प्रवाह",
+    "diseaseTrends": "रोग निगरानी",
+    "emergencyCommand": "आपातकालीन कमांड मोड",
+    "federatedAI": "फेडरेटेड एआई नेटवर्क",
+    "analytics": "संसाधन विश्लेषिकी",
+    "settings": "सेटिंग्स एवं सुरक्षा",
+    "search": "त्वरित खोज (Ctrl + K)"
+  },
+  "roles": {
+    "SUPER_ADMIN": "सिस्टम प्रशासक",
+    "NATIONAL_ADMIN": "राष्ट्रीय स्वास्थ्य कमान",
+    "STATE_ADMIN": "राज्य स्वास्थ्य प्राधिकरण",
+    "DISTRICT_ADMIN": "जिला स्वास्थ्य प्राधिकरण",
+    "FACILITY_ADMIN": "अस्पताल / पीएचसी प्रशासक",
+    "national_officer": "राष्ट्रीय अधिकारी",
+    "state_officer": "राज्य स्वास्थ्य निदेशक",
+    "district_officer": "जिला मजिस्ट्रेट / सीएमओ",
+    "facility_admin": "अस्पताल प्रशासक",
+    "logistics_coordinator": "आपूर्ति श्रृंखला समन्वयक",
+    "doctor": "मुख्य चिकित्सा अधिकारी"
+  },
+  "auth": {
+    "login": "साइन इन करें",
+    "loginTitle": "कमांड एक्सेस पोर्टल",
+    "loginSubtitle": "राष्ट्रीय स्वास्थ्य संसाधन खुफिया और कमांड प्लेटफॉर्म",
+    "roleSelector": "अपनी भूमिका चुनें",
+    "emailLabel": "आधिकारिक ईमेल / यूजर आईडी",
+    "passwordLabel": "पासकोड / पासवर्ड",
+    "rememberMe": "इस टर्मिनल को याद रखें",
+    "forgotPassword": "पासकोड भूल गए / आपातकालीन पहुंच",
+    "submitting": "सत्यापित किया जा रहा है...",
+    "roleMismatch": "चयनित भूमिका इस खाते से मेल नहीं खाती है।",
+    "invalidCredentials": "अमान्य क्रेडेंशियल। कृपया विवरण जांचें या नीचे दिए गए डेमो खाते का चयन करें।",
+    "logout": "साइन आउट",
+    "demoAccounts": "डेमो क्रेडेंशियल"
+  },
+  "status": {
+    "resilienceScore": "ग्रिड लचीलापन स्कोर",
+    "activeNodes": "सक्रिय मेश नोड्स",
+    "criticalAlerts": "गंभीर कमी अलर्ट",
+    "syncStatus": "रियल-टाइम एज सिंक सक्रिय"
+  },
+  "actions": {
+    "switchRole": "सिम्युलेटेड भूमिका बदलें",
+    "emergencyMode": "आपातकालीन मोड चालू/बंद",
+    "searchPlaceholder": "अस्पताल, दवाइयां, बेड खोजें...",
+    "close": "बंद करें",
+    "retry": "पुनः प्रयास करें"
+  }
+}

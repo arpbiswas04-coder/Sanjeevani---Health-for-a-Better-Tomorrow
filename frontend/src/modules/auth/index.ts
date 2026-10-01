@@ -1,2 +1,6 @@
-// Auth module placeholder
-export const AUTH_MODULE = 'auth';
+export * from './LoginPage';
+export * from './RegisterPage';
+export * from './MFAPage';
+export * from './ForgotPasswordPage';
+export * from './ProfilePage';
+export * from './SettingsPage';
