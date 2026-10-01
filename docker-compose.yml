@@ -6,7 +6,7 @@ services:
     environment:
       POSTGRES_DB: ${POSTGRES_DB:-sanjeevani}
       POSTGRES_USER: ${POSTGRES_USER:-sanjeevani}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-sanjeevani_dev}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in your untracked .env}
     ports:
       - "5432:5432"
     volumes:
@@ -47,8 +47,8 @@ services:
       APP_ENV: ${APP_ENV:-development}
       POSTGRES_DB: ${POSTGRES_DB:-sanjeevani}
       POSTGRES_USER: ${POSTGRES_USER:-sanjeevani}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-sanjeevani_dev}
-      DATABASE_URL: ${DATABASE_URL:-postgresql+asyncpg://${POSTGRES_USER:-sanjeevani}:${POSTGRES_PASSWORD:-sanjeevani_dev}@postgres:5432/${POSTGRES_DB:-sanjeevani}}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in your untracked .env}
+      DATABASE_URL: ${DATABASE_URL:-postgresql+asyncpg://${POSTGRES_USER:-sanjeevani}:${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in your untracked .env}@postgres:5432/${POSTGRES_DB:-sanjeevani}}
       REDIS_URL: ${REDIS_URL:-redis://redis:6379/0}
       FRONTEND_URL: ${FRONTEND_URL:-http://localhost:5173}
       BACKEND_URL: ${BACKEND_URL:-http://localhost:8000}
