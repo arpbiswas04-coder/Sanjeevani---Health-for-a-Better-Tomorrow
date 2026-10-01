@@ -62,9 +62,30 @@ class BedForecastPoint(BaseModel):
 
     timestamp: str
     bed_type: BedType
-    predicted_occupancy: float = Field(ge=0.0, le=1.0)
-    predicted_occupied_beds: float = Field(ge=0.0)
-    total_beds: int = Field(gt=0)
+
+    predicted_occupancy: float = Field(
+        ge=0.0,
+        le=1.0,
+    )
+
+    predicted_occupied_beds: float = Field(
+        ge=0.0,
+    )
+
+    total_beds: int = Field(
+        gt=0,
+    )
+
+    warning_saturation_probability: float = Field(
+        ge=0.0,
+        le=1.0,
+    )
+
+    critical_saturation_probability: float = Field(
+        ge=0.0,
+        le=1.0,
+    )
+
     warning_threshold_exceeded: bool
     critical_threshold_exceeded: bool
 
@@ -80,12 +101,22 @@ class BedForecastResponse(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     success: bool = True
+
     prediction_id: str
+
     facility_id: str
+
     model_version: str
+
     generated_at: str
+
     predictions: list[BedForecastPoint]
-    confidence: float = Field(ge=0.0, le=1.0)
+
+    confidence: float = Field(
+        ge=0.0,
+        le=1.0,
+    )
+
     explanation: str
 
     @field_validator("prediction_id", "facility_id")
@@ -101,6 +132,7 @@ class BedForecastResponse(BaseModel):
 
 def placeholder() -> dict[str, object]:
     """Backward-compatible placeholder helper."""
+
     return {
         "module": "bed_forecasting.schema",
         "status": "implemented",

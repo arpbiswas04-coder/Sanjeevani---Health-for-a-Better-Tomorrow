@@ -294,6 +294,12 @@ class BedForecastingPredictor:
                             predicted_occupied_beds
                         ),
                         total_beds=total_beds,
+                        warning_saturation_probability=(
+                            warning_probability
+                        ),
+                        critical_saturation_probability=(
+                            critical_probability
+                        ),
                         warning_threshold_exceeded=(
                             warning_probability >= 0.5
                         ),

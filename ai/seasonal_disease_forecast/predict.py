@@ -4,7 +4,6 @@ from __future__ import annotations
 
 from datetime import timedelta
 
-import numpy as np
 import pandas as pd
 import xgboost as xgb
 
@@ -29,6 +28,23 @@ from .train import (
     SeasonalDiseaseModel,
     train_model,
 )
+
+
+def _validation_confidence(model_bundle: SeasonalDiseaseModel) -> float:
+    """Convert validation error into a bounded confidence score.
+
+    The score is derived from validation WAPE and is not a probability.
+    Lower validation error produces higher confidence.
+    """
+
+    validation_wape = max(
+        0.0,
+        float(model_bundle.metrics.get("wape", 0.0)),
+    )
+
+    return float(
+        1.0 / (1.0 + validation_wape)
+    )
 
 
 class SeasonalDiseaseForecastPredictor(
@@ -116,6 +132,10 @@ class SeasonalDiseaseForecastPredictor(
             frame
         )
 
+        confidence = _validation_confidence(
+            self.model_bundle
+        )
+
         for step in range(
             1,
             request.horizon_days + 1,
@@ -180,12 +200,6 @@ class SeasonalDiseaseForecastPredictor(
                 + (1.96 * residual_std)
             )
 
-            confidence = (
-                1.0
-                if residual_std == 0.0
-                else 0.95
-            )
-
             working.loc[
                 next_timestamp,
                 "case_count",
@@ -221,6 +235,11 @@ class SeasonalDiseaseForecastPredictor(
                 (
                     "Prediction bounds are derived "
                     "from validation residual variability."
+                ),
+                (
+                    "Confidence is derived from "
+                    "validation WAPE and is not a "
+                    "probability."
                 ),
                 (
                     "Seasonal signal is a descriptive "
