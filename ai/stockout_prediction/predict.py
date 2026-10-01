@@ -93,16 +93,26 @@ class StockoutPredictor(BasePredictor):
 
         # ── Stockout decision ───────────────────────────────────────────────
         stockout_predicted: bool = available < lead_need
+        shortage_qty: float = max(0.0, lead_need - available) if stockout_predicted else 0.0
 
         # ── Risk level assignment (canonical RiskLevel values) ──────────────
         if stockout_predicted and coverage_ratio < COVERAGE_CRITICAL_THRESHOLD:
             risk_level = RiskLevel.CRITICAL
+            risk_probability = min(1.0, max(0.8, 1.0 - coverage_ratio))
         elif stockout_predicted:
             risk_level = RiskLevel.HIGH
+            risk_probability = min(0.8, max(0.5, 1.0 - coverage_ratio))
         elif coverage_ratio < COVERAGE_MODERATE_THRESHOLD:
             risk_level = RiskLevel.MODERATE
+            risk_probability = min(0.5, max(0.2, (COVERAGE_MODERATE_THRESHOLD - coverage_ratio)))
         else:
             risk_level = RiskLevel.LOW
+            risk_probability = 0.0
+
+        explanation = (
+            f"Available quantity ({available:.1f}) provides {coverage_ratio:.2f}x coverage for lead time demand ({lead_need:.1f}). "
+            f"Assigned risk level: {risk_level.value}."
+        )
 
         # ── Build validated response ────────────────────────────────────────
         response = StockoutPredictionResponse(
@@ -112,10 +122,13 @@ class StockoutPredictor(BasePredictor):
             generated_at=now_utc_iso8601(),
             stockout_predicted=stockout_predicted,
             risk_level=risk_level,
+            risk_probability=round(risk_probability, 4),
+            predicted_shortage_quantity=round(shortage_qty, 2),
             days_until_stockout=days_until_stockout,
             available_quantity=available,
             demand_during_lead_time=lead_need,
             coverage_ratio=round(coverage_ratio, 6),
+            explanation=explanation,
         )
         return response.model_dump()
 

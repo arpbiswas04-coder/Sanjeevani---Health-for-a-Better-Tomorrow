@@ -15,6 +15,7 @@ import xgboost as xgb
 from ai.common.base_model import BaseForecaster
 from ai.common.metrics import calculate_forecasting_metrics
 from ai.common.serialization import save_artifact
+from ai.common.tracking import track_training
 from ai.demand_forecasting.config import (
     ARTIFACT_FILENAME,
     DEFAULT_HORIZON_DAYS,
@@ -126,6 +127,15 @@ class XGBoostDemandForecaster(BaseForecaster):
             mean_actual = float(np.mean(y_arr))
             norm_rmse = self.validation_metrics["rmse"] / (mean_actual + 1e-6)
             self.confidence = float(np.clip(1.0 / (1.0 + norm_rmse), 0.05, 0.99))
+
+        track_training(
+            model_name="XGBoostDemandForecaster",
+            model_version=self.model_version,
+            params=self.params,
+            metrics=self.validation_metrics,
+            booster=self.booster,
+            experiment_name="demand-forecasting",
+        )
 
         return self
 

@@ -518,8 +518,12 @@ class TestStockoutPredictor(unittest.TestCase):
             "model_version", "generated_at", "stockout_predicted",
             "risk_level", "days_until_stockout", "available_quantity",
             "demand_during_lead_time", "coverage_ratio",
+            "risk_probability", "predicted_shortage_quantity",
         }
         self.assertTrue(required_keys.issubset(result.keys()))
+        self.assertGreaterEqual(result["risk_probability"], 0.0)
+        self.assertLessEqual(result["risk_probability"], 1.0)
+        self.assertGreaterEqual(result["predicted_shortage_quantity"], 0.0)
 
     def test_response_success_is_true(self):
         result = self._predict()

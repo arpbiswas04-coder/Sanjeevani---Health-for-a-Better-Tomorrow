@@ -17,6 +17,7 @@ from ai.common.metrics import (
     calculate_wape,
 )
 from ai.common.serialization import load_artifact, save_artifact
+from ai.common.tracking import TrackingRunResult, is_mlflow_available, track_training
 from ai.common.types import (
     RiskLevel,
     ensure_utc_iso8601,
@@ -47,4 +48,7 @@ __all__ = [
     "calculate_classification_metrics",
     "save_artifact",
     "load_artifact",
+    "track_training",
+    "is_mlflow_available",
+    "TrackingRunResult",
 ]

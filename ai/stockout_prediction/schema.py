@@ -168,6 +168,21 @@ class StockoutPredictionResponse(BaseModel):
             "1.0 when demand_during_lead_time is near-zero and stock is present"
         ),
     )
+    risk_probability: float = Field(
+        default=0.0,
+        ge=0.0,
+        le=1.0,
+        description="Estimated probability of stockout during supplier lead time",
+    )
+    predicted_shortage_quantity: float = Field(
+        default=0.0,
+        ge=0.0,
+        description="Predicted shortage quantity if stockout occurs",
+    )
+    explanation: Optional[str] = Field(
+        default=None,
+        description="Human-readable explanation of stockout risk decision",
+    )
 
     @field_validator("prediction_id", "facility_id", "item_id")
     @classmethod
