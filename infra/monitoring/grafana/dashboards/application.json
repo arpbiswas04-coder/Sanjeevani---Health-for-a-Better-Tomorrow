@@ -2,7 +2,7 @@
   "uid": "sanjeevani-application",
   "title": "Sanjeevani Application and Infrastructure",
   "schemaVersion": 39,
-  "version": 1,
+  "version": 2,
   "editable": false,
   "refresh": "15s",
   "time": {
@@ -252,6 +252,123 @@
           "noValue": "No observations"
         },
         "overrides": []
+      }
+    },
+    {
+      "id": 20,
+      "title": "Backup / restore evidence available",
+      "type": "stat",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "federation-prometheus"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sanjeevani_operation_status_available",
+          "legendFormat": "{{operation}}"
+        }
+      ],
+      "gridPos": {
+        "x": 0,
+        "y": 24,
+        "w": 8,
+        "h": 6
+      },
+      "fieldConfig": {
+        "defaults": {
+          "noValue": "No evidence"
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "value",
+        "graphMode": "none"
+      }
+    },
+    {
+      "id": 21,
+      "title": "Last backup / restore result",
+      "type": "stat",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "federation-prometheus"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sanjeevani_scheduled_success",
+          "legendFormat": "{{operation}}"
+        }
+      ],
+      "gridPos": {
+        "x": 8,
+        "y": 24,
+        "w": 8,
+        "h": 6
+      },
+      "fieldConfig": {
+        "defaults": {
+          "noValue": "No evidence"
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "value",
+        "graphMode": "none"
+      }
+    },
+    {
+      "id": 22,
+      "title": "Seconds since successful backup / restore",
+      "type": "stat",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "federation-prometheus"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "time() - sanjeevani_last_success_timestamp_seconds",
+          "legendFormat": "{{operation}}"
+        }
+      ],
+      "gridPos": {
+        "x": 16,
+        "y": 24,
+        "w": 8,
+        "h": 6
+      },
+      "fieldConfig": {
+        "defaults": {
+          "noValue": "No evidence"
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "value",
+        "graphMode": "none"
       }
     }
   ]

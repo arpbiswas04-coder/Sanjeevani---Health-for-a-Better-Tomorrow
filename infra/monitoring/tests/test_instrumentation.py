@@ -1,7 +1,13 @@
 import asyncio
 from pathlib import Path
+import sys
 import tempfile
 import unittest
+
+_infra = str(Path(__file__).resolve().parents[2])
+if _infra not in sys.path:
+    sys.path.insert(0, _infra)
+
 from monitoring.runtime.instrumentation import MetricsApp
 from optimization.common import telemetry
 

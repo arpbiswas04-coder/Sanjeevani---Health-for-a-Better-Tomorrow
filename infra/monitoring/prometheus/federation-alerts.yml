@@ -21,3 +21,8 @@ groups:
           severity: warning
         annotations:
           summary: Multiple rounds lacked enough valid participants
+      - alert: FederationRoundCloseSlow
+        expr: sanjeevani_federation_last_round_close_duration_seconds > 10
+        for: 1m
+        labels: {severity: warning}
+        annotations: {summary: Round closure exceeds ten seconds; tune against the deployment workload}

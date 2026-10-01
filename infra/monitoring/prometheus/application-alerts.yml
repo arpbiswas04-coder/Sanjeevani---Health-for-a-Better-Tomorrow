@@ -16,3 +16,26 @@ groups:
         for: 2m
         labels: {severity: warning}
         annotations: {summary: Backend server-error rate above demo threshold; tune against agreed SLO}
+      - alert: OptimizerFailures
+        expr: sum(increase(sanjeevani_operation_calls_total{kind="optimizer",status="error"}[5m])) > 0
+        labels: {severity: warning}
+        annotations: {summary: Optimizer operation failed; inspect sanitized application logs}
+      - alert: BackupOrRestoreStatusMissing
+        expr: sanjeevani_operation_status_available == 0
+        for: 5m
+        labels: {severity: warning}
+        annotations: {summary: No valid backup or recovery evidence is available}
+      - alert: ScheduledBackupOrRestoreFailed
+        expr: sanjeevani_scheduled_success == 0
+        labels: {severity: critical}
+        annotations: {summary: Latest backup or recovery drill failed}
+      - alert: BackupStale
+        expr: time() - sanjeevani_last_success_timestamp_seconds{operation="backup"} > 86400
+        for: 5m
+        labels: {severity: critical}
+        annotations: {summary: No successful backup in 24 hours; demo threshold requires an agreed RPO}
+      - alert: RestoreDrillStale
+        expr: time() - sanjeevani_last_success_timestamp_seconds{operation="restore"} > 604800
+        for: 5m
+        labels: {severity: warning}
+        annotations: {summary: No successful restore drill in seven days}

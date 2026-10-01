@@ -2,9 +2,34 @@
 import asyncio
 import hmac
 import os
+import json
+import math
 from pathlib import Path
 from time import perf_counter
 from optimization.common.telemetry import observe, render
+
+
+def operation_metrics(directory=None):
+    root = Path(directory or os.environ.get('MEMBER4_OPERATION_STATUS_DIR', '/run/member4-operations'))
+    lines = []
+    for operation in ('backup', 'restore'):
+        path = root / f'{operation}.json'
+        try:
+            if path.stat().st_size > 4096 or path.is_symlink():
+                raise ValueError('Invalid status')
+            value = json.loads(path.read_text(encoding='utf-8'))
+            if type(value['success']) is not bool:
+                raise ValueError('Invalid result')
+            for field in ('last_attempt', 'last_success'):
+                number = value[field]
+                if type(number) not in (int, float) or not math.isfinite(number) or number < 0:
+                    raise ValueError('Invalid timestamp')
+            lines += [f'sanjeevani_operation_status_available{{operation="{operation}"}} 1',
+                      f'sanjeevani_scheduled_success{{operation="{operation}"}} {int(value["success"])}',
+                      f'sanjeevani_last_success_timestamp_seconds{{operation="{operation}"}} {value["last_success"]}']
+        except (OSError, ValueError, KeyError, TypeError):
+            lines.append(f'sanjeevani_operation_status_available{{operation="{operation}"}} 0')
+    return '\n'.join(lines) + '\n'
 
 
 def dependencies():
@@ -43,6 +68,19 @@ class MetricsApp:
     async def __call__(self, scope, receive, send):
         if scope['type'] != 'http': return await self.app(scope,receive,send)
         path = scope.get('path','')
+        if path in ('/api/v1/live', '/api/v1/ready'):
+            ready = True
+            if path.endswith('/ready'):
+                try:
+                    probes = await asyncio.to_thread(self.collector)
+                    ready = all(f'sanjeevani_dependency_up{{service="{name}"}} 1' in probes.splitlines()
+                                for name in ('postgres', 'redis'))
+                except Exception:
+                    ready = False
+            await send({'type':'http.response.start', 'status':200 if ready else 503,
+                        'headers':[(b'content-type', b'application/json'), (b'cache-control', b'no-store')]})
+            await send({'type':'http.response.body', 'body':b'{"status":"ok"}' if ready else b'{"status":"unavailable"}'})
+            return
         if path == '/internal/metrics':
             code, body = 403, b'Forbidden\n'
             try:
@@ -51,7 +89,7 @@ class MetricsApp:
                 if len(token) >= 32 and hmac.compare_digest(headers.get(b'authorization',b''), b'Bearer '+token):
                     if scope.get('method') != 'GET': code, body = 405, b'Method not allowed\n'
                     else:
-                        code, body = 200, (render()+await asyncio.to_thread(self.collector)).encode()
+                        code, body = 200, (render()+await asyncio.to_thread(self.collector)+operation_metrics()).encode()
             except OSError:
                 code, body = 503, b'Metrics credential unavailable\n'
             await send({'type':'http.response.start','status':code,'headers':[
