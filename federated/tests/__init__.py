@@ -1,1 +1,1 @@
-"""Federated tests package initialization."""
+"""Focused tests for the reference federation."""

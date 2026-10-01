@@ -1,1 +1,1 @@
-"""Federated strategies package initialization."""
+"""Aggregation strategies."""

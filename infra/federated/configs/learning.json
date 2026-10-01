@@ -1,0 +1,4 @@
+{
+  "privacy": {"enabled": true, "clipping_norm": 0.5, "noise_multiplier": 4.0, "delta": 0.00001, "privacy_budget": 5.0},
+  "personalization": {"enabled": false, "local_epochs": 1, "learning_rate": 0.05}
+}

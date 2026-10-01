@@ -1,0 +1,5 @@
+{"nodes":[
+  {"node_id":"district-a","region":"region-a","country":"IN"},
+  {"node_id":"district-b","region":"region-b","country":"IN"},
+  {"node_id":"district-c","region":"region-c","country":"IN"}
+]}

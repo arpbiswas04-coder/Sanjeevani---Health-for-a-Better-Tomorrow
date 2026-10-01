@@ -12,7 +12,7 @@ class DatabaseRecoveryTests(unittest.TestCase):
     def test_encrypted_backup_and_fresh_restore_command_only(self):
         from cryptography.fernet import Fernet
         import sys
-        _infra = str(Path(__file__).resolve().parents[2])
+        _infra = str(Path(__file__).resolve().parents[2] / "infra")
         if _infra not in sys.path:
             sys.path.insert(0, _infra)
         from security import postgres_recovery as recovery

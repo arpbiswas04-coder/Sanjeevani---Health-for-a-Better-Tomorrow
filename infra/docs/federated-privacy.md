@@ -16,8 +16,8 @@ enabled for those paths and is not approved for real health data.
 
 ## Clipping, noise and budget
 
-`privacy/policy.json` configures clipping norm C, noise multiplier sigma, delta
-and maximum epsilon. Each client computes a two-coordinate model delta, clips
+`federated/configs/learning.json` now configures enablement and clipping norm C, noise multiplier sigma, delta
+and maximum epsilon (`privacy_budget`). `privacy/policy.json` remains a legacy policy fixture. Each client computes a two-coordinate model delta, clips
 its L2 norm to C, and adds independent Gaussian noise with standard deviation
 `2 * C * sigma` per coordinate. The privacy unit is replacing one client's entire
 local dataset with the same public participant roster. Two clipped vectors differ
@@ -56,8 +56,10 @@ there is no reconstruction or partial aggregation. Follow the
 This is an architectural demonstration of pairwise masking, **not** the full
 [dropout-tolerant secure aggregation protocol](https://research.google/pubs/practical-secure-aggregation-for-privacy-preserving-machine-learning/)
 or Flower SecAgg+. The trusted harness supplies one common public-key roster.
-There is no authenticated peer-key exchange, protection against malicious roster
-substitution, coordinator/client collusion, Sybil identities or poisoned updates.
+The current harness adds pinned Ed25519 identities, signed ephemeral-key exchange
+and signed updates bound to nonce/round/model version; altered signatures and
+replay are rejected. Independent identity enrollment, coordinator/client collusion
+defense, Sybil defense and poisoned-update detection are not implemented.
 All clients share one Python process, so the harness can inspect their memory.
 Aggregate-only API access must not be confused with OS isolation or formal guarantees.
 
@@ -90,3 +92,9 @@ restart for each synthetic invocation; lifetime release counts continue. Failed
 rounds may leave different counts, independently charged and reported. Commits
 precede sampling; privileged editing/deletion and rollback are not prevented.
 The direct CLI supports these flags under `infra/federated/checkpoints/`.
+
+## October 1 configuration additions
+
+Optional node-local personalization and public region/country metadata are documented
+in [the completion guide](completion-and-deployment.md). Personalization never
+modifies the global model or sends personalized weights to the coordinator.

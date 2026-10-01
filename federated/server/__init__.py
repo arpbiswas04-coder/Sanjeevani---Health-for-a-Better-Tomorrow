@@ -1,1 +1,1 @@
-"""Federated server package initialization."""
+"""Coordinator state for the in-process reference federation."""

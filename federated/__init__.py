@@ -1,1 +1,1 @@
-"""Federated Root Package."""
+"""Local federated-learning mechanics prototype; not a network service."""
