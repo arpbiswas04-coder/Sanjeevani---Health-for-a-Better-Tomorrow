@@ -1,0 +1,54 @@
+name: Member 4 deployment
+on:
+  workflow_run:
+    workflows: [Member 4 checks]
+    types: [completed]
+    branches: [develop]
+  workflow_dispatch:
+    inputs:
+      environment:
+        type: choice
+        options: [staging, production]
+        default: staging
+        required: true
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: member4-deploy-${{ inputs.environment || 'staging' }}
+  cancel-in-progress: false
+jobs:
+  deploy:
+    if: >-
+      (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success'
+       && github.event.workflow_run.event == 'push'
+       && github.event.workflow_run.head_repository.full_name == github.repository)
+      || (github.event_name == 'workflow_dispatch' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop'))
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    environment: ${{ inputs.environment || 'staging' }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Require successful checks for this exact revision
+        env:
+          GH_TOKEN: ${{ github.token }}
+          DEPLOY_SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
+          DEPLOY_ENVIRONMENT: ${{ inputs.environment || 'staging' }}
+        run: python infra/deployment/check_release_ci.py
+      - name: Deploy to pre-provisioned SSH host
+        env:
+          DEPLOY_PROVIDER: ${{ vars.DEPLOY_PROVIDER }}
+          DEPLOY_HOST: ${{ vars.DEPLOY_HOST }}
+          DEPLOY_USER: ${{ vars.DEPLOY_USER }}
+          DEPLOY_PATH: ${{ vars.DEPLOY_PATH }}
+          DEPLOY_SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
+          DEPLOY_ENVIRONMENT: ${{ inputs.environment || 'staging' }}
+          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          DEPLOY_KNOWN_HOSTS: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
+        run: python infra/deployment/ssh_deploy.py

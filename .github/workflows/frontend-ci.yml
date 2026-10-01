@@ -1,14 +1,14 @@
 name: Frontend CI
 
 on:
+  workflow_dispatch:
   push:
-    paths:
-      - 'frontend/**'
-      - '.github/workflows/frontend-ci.yml'
+    branches: [main, develop, infra/ayan]
   pull_request:
-    paths:
-      - 'frontend/**'
-      - '.github/workflows/frontend-ci.yml'
+    branches: [main, develop]
+
+permissions:
+  contents: read
 
 jobs:
   build-and-typecheck:
@@ -24,12 +24,28 @@ jobs:
         with:
           node-version: 20
           cache: 'npm'
-          cache-dependency-path: frontend/package.json
+          cache-dependency-path: frontend/package-lock.json
 
       - name: Install dependencies
         working-directory: ./frontend
-        run: npm ci || npm install
+        run: npm ci
 
       - name: TypeScript & Production Build
         working-directory: ./frontend
         run: npm run build
+
+      - name: Available frontend lint and tests
+        working-directory: ./frontend
+        run: |
+          npm run lint --if-present
+          npm run test --if-present
+      - name: Audit JavaScript dependencies
+        working-directory: ./frontend
+        run: npm audit --audit-level=high --json > npm-audit.json
+      - name: Preserve audit results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-audit
+          path: frontend/npm-audit.json
+          if-no-files-found: warn

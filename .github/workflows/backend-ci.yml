@@ -1,14 +1,14 @@
 name: Backend CI
 
 on:
+  workflow_dispatch:
   push:
-    paths:
-      - 'backend/**'
-      - '.github/workflows/backend-ci.yml'
+    branches: [main, develop, infra/ayan]
   pull_request:
-    paths:
-      - 'backend/**'
-      - '.github/workflows/backend-ci.yml'
+    branches: [main, develop]
+
+permissions:
+  contents: read
 
 jobs:
   test:
@@ -35,3 +35,22 @@ jobs:
       - name: Run Pytest
         working-directory: ./backend
         run: pytest
+
+      - name: Static errors
+        run: |
+          python -m pip install ruff
+          python -m ruff check --select E9,F63,F7,F82 backend/app
+
+      - name: Audit resolved backend dependencies
+        run: |
+          python -m venv /tmp/member4-backend-audit
+          /tmp/member4-backend-audit/bin/python -m pip install pip-audit==2.10.1
+          python infra/security/audit_requirements.py --output /tmp/backend-requirements.txt
+          /tmp/member4-backend-audit/bin/python -m pip_audit --strict --disable-pip --no-deps -r /tmp/backend-requirements.txt --format json --output /tmp/backend-audit.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: backend-dependency-audit
+          path: /tmp/backend-audit.json
+          if-no-files-found: warn
+          retention-days: 7

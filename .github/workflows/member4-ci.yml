@@ -1,4 +1,3 @@
-# Reference copy; active definition is .github/workflows/member4-ci.yml.
 name: Member 4 checks
 
 on:
