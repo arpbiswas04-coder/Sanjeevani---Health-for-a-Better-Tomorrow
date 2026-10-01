@@ -10,3 +10,9 @@
 See [startup](../docs/local-stack-start.md), [operations](../docs/operations-completion.md)
 and [requirements](../docs/requirements-evidence.md). No Kubernetes, Helm, cloud
 deployment or registered scheduled task is claimed in this directory.
+
+## October 1 additions
+
+See [complete setup and deployment instructions](../docs/completion-and-deployment.md)
+for TLS ingress, local/S3 storage adapters, atomic operation status, exact-revision
+CI gates, and guarded staging/production SSH deployment with rollback.

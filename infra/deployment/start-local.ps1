@@ -1,4 +1,5 @@
-param([switch]$Team, [switch]$Monitoring, [switch]$Grafana, [switch]$Observability, [switch]$Alerts)
+param([switch]$Team, [switch]$Monitoring, [switch]$Grafana, [switch]$Observability, [switch]$Alerts, [switch]$Https)
+if ($Https) { $Alerts = $true; $Grafana = $true }
 if ($Alerts) { $Observability = $true }
 if ($Observability) { $Team = $true; $Monitoring = $true }
 $ErrorActionPreference = 'Stop'
@@ -19,6 +20,7 @@ if ($Monitoring -or $Grafana) { $composeArgs += @('-f', (Join-Path $infraRoot 'c
 if ($Grafana) { $composeArgs += @('-f', (Join-Path $infraRoot 'compose.grafana.yaml')) }
 if ($Observability) { $composeArgs += @('-f', (Join-Path $infraRoot 'compose.observability.yaml')) }
 if ($Alerts) { $composeArgs += @('-f', (Join-Path $infraRoot 'compose.alerts.yaml')) }
+if ($Https) { $composeArgs += @('-f', (Join-Path $infraRoot 'compose.ingress.yaml')) }
 & $dockerExecutable @composeArgs config --quiet
 if ($LASTEXITCODE -ne 0) { throw 'Compose configuration failed. Check credentials and required environment variables.' }
 & $dockerExecutable @composeArgs up --build -d --wait --wait-timeout 180

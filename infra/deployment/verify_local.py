@@ -100,7 +100,7 @@ def main():
                 token = base64.b64encode(("admin:" + password).encode()).decode()
                 value = fetch("http://127.0.0.1:3000/api/dashboards/uid/sanjeevani-application",
                               headers={"Authorization": "Basic " + token})
-                return value["dashboard"]["uid"] == "sanjeevani-application" and len(value["dashboard"]["panels"]) == 9
+                return value["dashboard"]["uid"] == "sanjeevani-application" and len(value["dashboard"]["panels"]) == 12
             check("grafana_application_dashboard", application_dashboard)
     report = {"checked_at": datetime.now(timezone.utc).isoformat(), "checks": checks,
               "passed": all(value["passed"] for value in checks.values()),
