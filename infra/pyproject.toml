@@ -10,6 +10,7 @@ requires-python = ">=3.11"
 dependencies = []
 
 [project.optional-dependencies]
+backup = ["boto3==1.43.106"]
 transport = ["ortools==9.15.6755"]
 federation = ["flwr==1.39.0", "torch==2.14.0", "protobuf==6.33.5", "cryptography==46.0.7", "click==8.5.0"]
 
@@ -25,5 +26,5 @@ include = ["optimization*", "federated*"]
 "optimization.emergency" = ["example.json", "policy.example.json", "resource-example.json"]
 "optimization.workforce" = ["example.json"]
 "optimization.procurement" = ["example.json"]
-"federated" = ["configs/demo.json"]
+"federated" = ["configs/demo.json", "configs/learning.json", "configs/regions.json"]
 "federated.privacy" = ["policy.json"]

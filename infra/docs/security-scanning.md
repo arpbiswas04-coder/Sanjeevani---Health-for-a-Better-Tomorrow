@@ -1,5 +1,10 @@
 # Member 4 dependency and image scanning
 
+> Historical baseline below. October 1 implementation now includes root CI and
+> guarded deployment workflows, TLS ingress, authenticated masking and storage
+> adapters. See [current completion guide](completion-and-deployment.md). Hosted
+> execution and external deployment have not been performed.
+
 The inactive CI template at `ci-cd/member4-ci.yml` now defines two independent
 security checks in addition to its existing tests:
 
@@ -58,7 +63,7 @@ found HIGH/CRITICAL Debian and Python findings. Reports are in ignored
 Compatible remediation upgrades Flower/PyTorch, cryptography within Flower's
 supported range, protobuf, click and package tooling; the image applies available
 Debian updates. Flower 1.39.0 requires cryptography below 47, while some reported
-fixes require 48–50; do not override that dependency constraint and claim a supported
+fixes require 48â€“50; do not override that dependency constraint and claim a supported
 or clean installation. Debian findings without a fixed version remain unresolved.
 Follow-up scan results must be reviewed before a production release.
 

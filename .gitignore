@@ -74,6 +74,10 @@ checkpoints/
 *.key
 *.crt
 *.pfx
+*.enc
+secrets/
+federated/secrets/
+outputs/
 
 # Databases & Cache
 *.db
