@@ -1,1 +1,2 @@
-"""Optimization module."""
+"""Shared input validation helpers."""
+

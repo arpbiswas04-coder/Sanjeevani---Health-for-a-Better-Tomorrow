@@ -1,0 +1,36 @@
+{
+  "inventory_captured_at": "2026-09-30T12:00:00Z",
+  "transport_request": {
+    "request_id": "synthetic-emergency-1", "inventory_snapshot_id": "synthetic-stock-1",
+    "medicine_id": "med-22", "quantity_unit": "tablet",
+    "sources": [{"facility_id": "warehouse", "safe_surplus": 10,
+      "batches": [{"batch_id": "batch-a", "available_quantity": 10, "expiry_days": 30}]}],
+    "destinations": [{"facility_id": "phc-high", "required_quantity": 8}, {"facility_id": "phc-low", "required_quantity": 8}],
+    "lanes": [
+      {"source": "warehouse", "destination": "phc-high", "capacity": 8, "unit_cost_paise": 10, "fixed_dispatch_cost_paise": 20},
+      {"source": "warehouse", "destination": "phc-low", "capacity": 8, "unit_cost_paise": 1, "fixed_dispatch_cost_paise": 0}
+    ]
+  },
+  "risk_request": {
+    "request_id": "synthetic-emergency-1", "snapshot_id": "synthetic-risks-1",
+    "captured_at": "2026-09-30T12:00:00Z", "normalization_version": "prototype-normalized-v1",
+    "facilities": [
+      {"facility_id": "phc-high", "signals": {
+        "disease_growth": {"value": 0.9, "observed_at": "2026-09-30T12:00:00Z", "source_version": "synthetic-v1"},
+        "resource_shortage": {"value": 0.9, "observed_at": "2026-09-30T12:00:00Z", "source_version": "synthetic-v1"},
+        "bed_pressure": {"value": 0.9, "observed_at": "2026-09-30T12:00:00Z", "source_version": "synthetic-v1"},
+        "workforce_shortage": {"value": 0.9, "observed_at": "2026-09-30T12:00:00Z", "source_version": "synthetic-v1"},
+        "vulnerable_population": {"value": 0.9, "observed_at": "2026-09-30T12:00:00Z", "source_version": "synthetic-v1"},
+        "transport_disruption": {"value": 0.9, "observed_at": "2026-09-30T12:00:00Z", "source_version": "synthetic-v1"}
+      }},
+      {"facility_id": "phc-low", "signals": {
+        "disease_growth": {"value": 0.1, "observed_at": "2026-09-30T12:00:00Z", "source_version": "synthetic-v1"},
+        "resource_shortage": {"value": 0.1, "observed_at": "2026-09-30T12:00:00Z", "source_version": "synthetic-v1"},
+        "bed_pressure": {"value": 0.1, "observed_at": "2026-09-30T12:00:00Z", "source_version": "synthetic-v1"},
+        "workforce_shortage": {"value": 0.1, "observed_at": "2026-09-30T12:00:00Z", "source_version": "synthetic-v1"},
+        "vulnerable_population": {"value": 0.1, "observed_at": "2026-09-30T12:00:00Z", "source_version": "synthetic-v1"},
+        "transport_disruption": {"value": 0.1, "observed_at": "2026-09-30T12:00:00Z", "source_version": "synthetic-v1"}
+      }}
+    ]
+  }
+}
