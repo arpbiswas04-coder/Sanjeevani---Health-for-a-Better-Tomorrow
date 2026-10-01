@@ -3,11 +3,13 @@
 from __future__ import annotations
 
 from datetime import timedelta
+from pathlib import Path
 
 import pandas as pd
 import xgboost as xgb
 
 from ai.common.base_model import BaseForecaster
+from ai.common.serialization import load_artifact
 
 from .config import (
     DEFAULT_CONFIG,
@@ -55,10 +57,36 @@ class SeasonalDiseaseForecastPredictor(
     def __init__(
         self,
         config: SeasonalDiseaseForecastConfig = DEFAULT_CONFIG,
+        model_bundle: SeasonalDiseaseModel | None = None,
+        artifact_path: str | Path | None = None,
     ) -> None:
+        super().__init__(
+            model_name="SeasonalDiseaseForecastPredictor"
+        )
         self.config = config
         self.model_bundle: SeasonalDiseaseModel | None = None
         self.history: pd.DataFrame | None = None
+
+        # Load from artifact path if supplied
+        if artifact_path is not None:
+            loaded = load_artifact(artifact_path)
+            if isinstance(loaded, SeasonalDiseaseForecastPredictor):
+                self.model_bundle = loaded.model_bundle
+                self.history = loaded.history
+            elif isinstance(loaded, SeasonalDiseaseModel):
+                self.model_bundle = loaded
+            else:
+                raise TypeError(
+                    f"Artifact at {artifact_path!r} is of unexpected "
+                    f"type {type(loaded).__name__}. Expected "
+                    "SeasonalDiseaseModel or SeasonalDiseaseForecastPredictor."
+                )
+            self.is_fitted = self.model_bundle is not None
+
+        # Direct model_bundle wins over artifact_path if both supplied
+        if model_bundle is not None:
+            self.model_bundle = model_bundle
+            self.is_fitted = True
 
     def fit(
         self,
@@ -80,6 +108,8 @@ class SeasonalDiseaseForecastPredictor(
             config=self.config,
         )
 
+        self.is_fitted = True
+
         return self.model_bundle
 
     def predict(
@@ -87,6 +117,13 @@ class SeasonalDiseaseForecastPredictor(
         payload: dict,
     ) -> dict:
         """Generate a recursive future disease forecast."""
+
+        if not self.is_fitted or self.model_bundle is None:
+            raise RuntimeError(
+                "SeasonalDiseaseForecastPredictor has no fitted model "
+                "available. Fit the model using fit() or initialize with "
+                "a pre-trained model_bundle or artifact_path."
+            )
 
         request = (
             SeasonalDiseaseForecastRequest.model_validate(
@@ -105,10 +142,6 @@ class SeasonalDiseaseForecastPredictor(
                 self.config.min_history_points
             ),
         )
-
-        self.fit(frame)
-
-        assert self.model_bundle is not None
 
         model = self.model_bundle.model
 
@@ -264,12 +297,23 @@ def forecast_seasonal_disease(
     history: list[dict],
     horizon_days: int = 7,
     config: SeasonalDiseaseForecastConfig = DEFAULT_CONFIG,
+    model_bundle: SeasonalDiseaseModel | None = None,
 ) -> dict:
     """Convenience function for seasonal disease forecasting."""
 
     predictor = SeasonalDiseaseForecastPredictor(
-        config=config
+        config=config,
+        model_bundle=model_bundle,
     )
+
+    if not predictor.is_fitted:
+        from ai.seasonal_disease_forecast.schema import SeasonalDiseaseRecord
+        records = [
+            SeasonalDiseaseRecord.model_validate(r)
+            for r in history
+        ]
+        frame = records_to_dataframe(records, disease=disease)
+        predictor.fit(frame)
 
     payload = {
         "facility_id": facility_id,

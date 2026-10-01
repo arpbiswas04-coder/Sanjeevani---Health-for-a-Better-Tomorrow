@@ -111,6 +111,24 @@ def make_frame(
     )
 
 
+# ---------------------------------------------------------------------------
+# Module-scoped fixture: train once, reuse across all inference tests
+# ---------------------------------------------------------------------------
+
+@pytest.fixture(scope="module")
+def fitted_predictor() -> SeasonalDiseaseForecastPredictor:
+    """Return a fully fitted predictor trained once for the module."""
+    from ai.seasonal_disease_forecast.train import train_model as _train
+
+    frame = make_frame(120)
+    model_bundle = _train(frame)
+    return SeasonalDiseaseForecastPredictor(model_bundle=model_bundle)
+
+
+# ---------------------------------------------------------------------------
+# Data / feature tests
+# ---------------------------------------------------------------------------
+
 def test_records_are_converted_to_daily_series() -> None:
     frame = make_frame(90)
 
@@ -262,12 +280,115 @@ def test_model_training_returns_model() -> None:
     assert "wape" in model_bundle.metrics
 
 
-def test_predictor_generates_requested_horizon() -> None:
-    predictor = (
-        SeasonalDiseaseForecastPredictor()
+# ---------------------------------------------------------------------------
+# Lifecycle regression tests
+# ---------------------------------------------------------------------------
+
+def test_predictor_without_fitted_model_raises_runtime_error() -> None:
+    """An unfitted predictor must raise RuntimeError — not retrain silently."""
+    predictor = SeasonalDiseaseForecastPredictor()
+
+    assert predictor.is_fitted is False
+
+    with pytest.raises(RuntimeError, match="no fitted model"):
+        predictor.predict(
+            {
+                "facility_id": (
+                    "550e8400-e29b-41d4-a716-446655440000"
+                ),
+                "disease": "influenza",
+                "history": make_history(120),
+                "horizon_days": 7,
+            }
+        )
+
+
+def test_predict_does_not_retrain_model(
+    fitted_predictor: SeasonalDiseaseForecastPredictor,
+) -> None:
+    """predict() must never replace the model_bundle that was supplied."""
+    bundle_before = fitted_predictor.model_bundle
+
+    fitted_predictor.predict(
+        {
+            "facility_id": (
+                "550e8400-e29b-41d4-a716-446655440000"
+            ),
+            "disease": "influenza",
+            "history": make_history(120),
+            "horizon_days": 7,
+        }
     )
 
+    assert fitted_predictor.model_bundle is bundle_before
+
+
+def test_predictor_lifecycle_fit_and_artifact_load(
+    tmp_path: object,
+) -> None:
+    """Full lifecycle: unfitted->fit->predict, then save->load via artifact_path."""
+    frame = make_frame(120)
+
+    predictor = SeasonalDiseaseForecastPredictor()
+    assert predictor.is_fitted is False
+
+    predictor.fit(frame)
+    assert predictor.is_fitted is True
+    assert predictor.model_bundle is not None
+
     result = predictor.predict(
+        {
+            "facility_id": (
+                "550e8400-e29b-41d4-a716-446655440000"
+            ),
+            "disease": "influenza",
+            "history": make_history(120),
+            "horizon_days": 7,
+        }
+    )
+    assert result["success"] is True
+
+    # Save model_bundle and reload via artifact_path
+    artifact_file = tmp_path / "test_bundle.joblib"  # type: ignore[operator]
+    from ai.common.serialization import save_artifact
+    save_artifact(predictor.model_bundle, artifact_file)
+
+    loaded_predictor = SeasonalDiseaseForecastPredictor(
+        artifact_path=artifact_file
+    )
+    assert loaded_predictor.is_fitted is True
+
+    loaded_result = loaded_predictor.predict(
+        {
+            "facility_id": (
+                "550e8400-e29b-41d4-a716-446655440000"
+            ),
+            "disease": "influenza",
+            "history": make_history(120),
+            "horizon_days": 7,
+        }
+    )
+    assert loaded_result["success"] is True
+
+
+def test_predictor_initialized_with_model_bundle_is_fitted() -> None:
+    """Supplying model_bundle at construction time marks predictor as fitted."""
+    frame = make_frame(120)
+    bundle = train_model(frame)
+
+    predictor = SeasonalDiseaseForecastPredictor(model_bundle=bundle)
+    assert predictor.is_fitted is True
+    assert predictor.model_bundle is bundle
+
+
+# ---------------------------------------------------------------------------
+# Inference tests (use fitted_predictor fixture to avoid repeated training)
+# ---------------------------------------------------------------------------
+
+def test_predictor_generates_requested_horizon(
+    fitted_predictor: SeasonalDiseaseForecastPredictor,
+) -> None:
+    result = fitted_predictor.predict(
         {
             "facility_id": (
                 "550e8400-e29b-41d4-a716-446655440000"
@@ -284,12 +405,10 @@ def test_predictor_generates_requested_horizon() -> None:
     assert len(result["predictions"]) == 7
 
 
-def test_predictions_are_non_negative() -> None:
-    predictor = (
-        SeasonalDiseaseForecastPredictor()
-    )
-
-    result = predictor.predict(
+def test_predictions_are_non_negative(
+    fitted_predictor: SeasonalDiseaseForecastPredictor,
+) -> None:
+    result = fitted_predictor.predict(
         {
             "facility_id": (
                 "550e8400-e29b-41d4-a716-446655440000"
@@ -311,12 +430,10 @@ def test_predictions_are_non_negative() -> None:
         )
 
 
-def test_prediction_confidence_is_bounded() -> None:
-    predictor = (
-        SeasonalDiseaseForecastPredictor()
-    )
-
-    result = predictor.predict(
+def test_prediction_confidence_is_bounded(
+    fitted_predictor: SeasonalDiseaseForecastPredictor,
+) -> None:
+    result = fitted_predictor.predict(
         {
             "facility_id": (
                 "550e8400-e29b-41d4-a716-446655440000"
@@ -331,13 +448,11 @@ def test_prediction_confidence_is_bounded() -> None:
         assert 0.0 <= prediction["confidence"] <= 1.0
 
 
-def test_short_history_is_rejected() -> None:
-    predictor = (
-        SeasonalDiseaseForecastPredictor()
-    )
-
+def test_short_history_is_rejected(
+    fitted_predictor: SeasonalDiseaseForecastPredictor,
+) -> None:
     with pytest.raises(ValueError):
-        predictor.predict(
+        fitted_predictor.predict(
             {
                 "facility_id": (
                     "550e8400-e29b-41d4-a716-446655440000"
@@ -349,13 +464,11 @@ def test_short_history_is_rejected() -> None:
         )
 
 
-def test_wrong_disease_is_rejected() -> None:
-    predictor = (
-        SeasonalDiseaseForecastPredictor()
-    )
-
+def test_wrong_disease_is_rejected(
+    fitted_predictor: SeasonalDiseaseForecastPredictor,
+) -> None:
     with pytest.raises(ValueError):
-        predictor.predict(
+        fitted_predictor.predict(
             {
                 "facility_id": (
                     "550e8400-e29b-41d4-a716-446655440000"
@@ -367,12 +480,10 @@ def test_wrong_disease_is_rejected() -> None:
         )
 
 
-def test_model_version_is_present() -> None:
-    predictor = (
-        SeasonalDiseaseForecastPredictor()
-    )
-
-    result = predictor.predict(
+def test_model_version_is_present(
+    fitted_predictor: SeasonalDiseaseForecastPredictor,
+) -> None:
+    result = fitted_predictor.predict(
         {
             "facility_id": (
                 "550e8400-e29b-41d4-a716-446655440000"
@@ -388,12 +499,10 @@ def test_model_version_is_present() -> None:
     )
 
 
-def test_explanation_contains_forecasting_context() -> None:
-    predictor = (
-        SeasonalDiseaseForecastPredictor()
-    )
-
-    result = predictor.predict(
+def test_explanation_contains_forecasting_context(
+    fitted_predictor: SeasonalDiseaseForecastPredictor,
+) -> None:
+    result = fitted_predictor.predict(
         {
             "facility_id": (
                 "550e8400-e29b-41d4-a716-446655440000"
