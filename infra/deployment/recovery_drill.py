@@ -8,6 +8,10 @@ import shutil
 import subprocess
 import sys
 import tempfile
+try:
+    from .operation_status import record
+except ImportError:
+    from operation_status import record
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -66,7 +70,10 @@ def main():
 
 if __name__ == "__main__":
     try:
-        raise SystemExit(main())
+        result = main()
+        record("restore", result == 0)
+        raise SystemExit(result)
     except (OSError, ValueError, KeyError, subprocess.SubprocessError):
+        record("restore", False)
         print("recovery_drill_failed: check Docker, PostgreSQL and prepared secrets; no source databases dropped")
         raise SystemExit(2)

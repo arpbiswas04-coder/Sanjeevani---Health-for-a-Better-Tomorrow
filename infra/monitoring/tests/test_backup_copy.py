@@ -2,9 +2,15 @@
 import hashlib
 import json
 from pathlib import Path
+import sys
 import tempfile
 import unittest
 from unittest.mock import patch
+
+_infra = str(Path(__file__).resolve().parents[2])
+if _infra not in sys.path:
+    sys.path.insert(0, _infra)
+
 from deployment import archive_copy
 from deployment import backup_job
 import subprocess

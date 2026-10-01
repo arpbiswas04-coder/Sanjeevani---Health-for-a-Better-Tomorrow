@@ -9,7 +9,8 @@ from cryptography.fernet import Fernet
 
 ROOT = Path(__file__).resolve().parents[1]
 # Closed selection: never recurse into secrets, environment files or volumes.
-FILES = ('compose.yaml', 'compose.team.yaml', 'compose.monitoring.yaml',
+FILES = ('compose.ingress.yaml', 'compose.production.yaml', 'nginx/member4-tls.conf',
+         'federated/configs/learning.json', 'federated/configs/regions.json', 'compose.yaml', 'compose.team.yaml', 'compose.monitoring.yaml',
          'compose.grafana.yaml', 'compose.observability.yaml', 'compose.alerts.yaml',
          'monitoring/alertmanager.local.yml', 'monitoring/prometheus/local-alerts.yml',
          'monitoring/prometheus/team.yml', 'monitoring/prometheus/application-alerts.yml',
