@@ -1,184 +1,182 @@
-# Development manual-login matrix
+# Development account coverage
 
-Verified 2026-10-03 on `feature/functional-completion`, local `sanjeevani_dev`.
-This is a development testing reference, not a production role policy.
+Verified 2026-10-04 against local `sanjeevani_dev`. Account changes are isolated on
+`feature/development-portal-accounts`; UI redesign work remains on its separate branch.
 
-## Authoritative role discovery
+## Before and after
 
-The database contains **four roles**, all covered by existing development accounts.
-The backend is capability-based: `roles`, `role_permissions`, `user_roles`,
-`user_facilities`, and `user_districts` govern access. A role name alone grants nothing.
-`app/bootstrap.py` provisions `administrator` with the 26-capability catalogue.
-`scripts/development_seed.py:PROFILES` defines the three narrower development profiles.
-Migrations do not provision national/state/district officer policies. Staff roles
-describe personnel records; they are not authenticated user roles.
+Before this task there were four DB roles: `administrator`, `dev_data_operator`,
+`dev_data_inventory`, `dev_data_reader`. Only system/facility presentation categories
+had live identities. National/state/district/facility-admin names were frontend
+compatibility aliases without provisioned policies. Supplier and staff-role records
+are not separately authenticated portals; no supplier/officer accounts were invented.
 
-Reviewed backend bootstrap, permission catalogue, identity/scope enforcement,
-role migrations, actual PostgreSQL rows, frontend `authService.BACKEND_ROLES`,
-`roleRoutes`, `navigationConfig`, `authorization`, `RoleGuard`, and `router.tsx`.
+The guarded development command now explicitly provisions four reviewed capability
+policies: `national_admin`, `state_admin`, `district_admin`, `facility_admin`.
+There are eight DB roles and eight manual-test accounts. Existing accounts remain;
+`dev-data-admin` is reused for SUPER_ADMIN instead of duplicating it.
+`arpan` and the legacy `phase2-verifier` are not manual-test additions and are untouched.
 
-| Category | Username | Backend role | Scope | Password source | Landing page |
-|---|---|---|---|---|---|
-| System administrator | dev-data-admin | administrator | global; no artificial regional assignment | Private local credentials JSON: `admin.password` | `/admin/dashboard` |
-| Facility operations | dev-data-operator | dev_data_operator | restricted; A Beautiful Mind Clinic only | Private local credentials JSON: `operator.password` | `/facility/dashboard` |
-| Warehouse / inventory | dev-data-inventory | dev_data_inventory | restricted; three imported facilities plus synthetic depot | Private local credentials JSON: `inventory.password` | `/facility/dashboard` |
-| Read-only facility | dev-data-reader | dev_data_reader | restricted; A Beautiful Mind Clinic only | Private local credentials JSON: `reader.password` | `/facility/dashboard` |
+## Complete manual-login matrix
 
-The private file is `tmp/development-data/credentials.json`, ignored by Git.
-All four accounts remain unchanged, including their current passwords. **Zero new
-accounts** were needed; the new command reused four and reported no uncovered DB roles.
-`arpan` and the older `phase2-verifier` are also administrator identities, not extra
-role categories. Neither was repurposed, password-reset, or used for these logins.
+Passwords are deliberately absent here. Use the retrieval command below.
 
-System admin maps to `SUPER_ADMIN`; all three scoped profiles map to `FACILITY_ADMIN`
-for presentation only. The latter alias does not grant administrator capabilities.
+| Portal / category | Username | Backend role | Scope / assignment | Landing page |
+|---|---|---|---|---|
+| SUPER_ADMIN | dev-data-admin | administrator | Global platform; 26 capabilities | `/admin/dashboard` |
+| NATIONAL_ADMIN | dev-national-admin | national_admin | Global operational; 17 capabilities, no platform administration | `/national/dashboard` |
+| STATE_ADMIN | dev-state-admin | state_admin | Restricted; snapshot of all existing districts in DEV3S; 16 capabilities | `/state/dashboard` |
+| DISTRICT_ADMIN | dev-district-admin | district_admin | Restricted; DEV3D only; 14 capabilities | `/district/dashboard` |
+| FACILITY_ADMIN | dev-facility-admin | facility_admin | Restricted; DEV-PHASE3 hospital only; 14 capabilities | `/facility/dashboard` |
+| Facility operator | dev-data-operator | dev_data_operator | Restricted; A Beautiful Mind Clinic only; 14 capabilities | `/facility/dashboard` |
+| Warehouse/inventory | dev-data-inventory | dev_data_inventory | Restricted; A Beautiful Mind Clinic, A C Hospital, A I I M S Hospital, DEVOPS-20261003-DEPOT; 8 capabilities | `/facility/dashboard` |
+| Read-only facility | dev-data-reader | dev_data_reader | Restricted; A Beautiful Mind Clinic only; 9 capabilities | `/facility/dashboard` |
 
-## Assignments and limits
+## Truthful geography and scope semantics
 
-| Facility | ID | Assigned accounts |
-|---|---|---|
-| A Beautiful Mind Clinic | `563bc877-ebcd-459e-b7de-791a0a28461f` | operator, inventory, reader |
-| A C Hospital | `6771d810-2009-4204-9997-5e279baae83d` | inventory |
-| A I I M S Hospital | `c5a2b501-e7ec-4b5d-83cc-a2b4c73a6525` | inventory |
-| DEVELOPMENT ONLY synthetic supply depot 20261003 | `a75516b1-9462-494b-92f0-2ec6c709e7a6` | inventory |
+Existing hierarchy reused unchanged:
 
-These records have no trusted block/district assignment. No hierarchy was invented.
-The backend supports global/restricted scope with explicit facilities or districts;
-there is no native user-state assignment model. A future state policy needs reviewed
-jurisdiction relationships and permissions, not a global account renamed “state”.
+- Country: DEVELOPMENT ONLY Phase 3 countries (`DEV3C`).
+- State: DEVELOPMENT ONLY Phase 3 states (`DEV3S`), `79011528-6982-4209-9b12-43c1940df5c3`.
+- District: DEVELOPMENT ONLY Phase 3 districts (`DEV3D`), `114c8723-9f3c-45f3-bd24-4b7198ebbf27`.
+- Block: DEVELOPMENT ONLY Phase 3 blocks (`DEV3B`), `8ce3ceda-2bd8-4bd1-9e5f-54d06558061b`.
+- Facility: DEVELOPMENT ONLY Phase 3 Hospital (`DEV-PHASE3`), `617d9388-e638-47d8-81c6-ab953aee427e`.
 
-| Frontend mapping without a provisioned profile | Presentation / possible landing | Disposition |
-|---|---|---|
-| `admin`, `super_admin` | SUPER_ADMIN / `/admin/dashboard` | Compatibility aliases only; actual production bootstrap name is `administrator` |
-| `national_admin`, `national_officer` | NATIONAL_ADMIN / `/national/dashboard` | No DB role or defined capability policy; no fabricated account |
-| `state_admin`, `state_officer` | STATE_ADMIN / `/state/dashboard` | No DB role/policy or native state scope; no fabricated account |
-| `district_admin`, `district_officer` | DISTRICT_ADMIN / `/district/dashboard` | No DB role/policy; imported test facilities lack trustworthy district hierarchy |
-| `facility_admin` | FACILITY_ADMIN / `/facility/dashboard` | Unprovisioned compatibility alias; use the actual scoped development profiles |
+No source facility was reassigned; no geography or coordinates were fabricated.
+The database currently has only one linked district and one linked hospital in this
+synthetic hierarchy. State, district and facility accounts therefore currently see
+that same hospital, through different grant mechanisms. This is not evidence of
+three different geographical datasets. Isolated PostgreSQL tests establish the
+policy differences with two states, three districts and four facilities: state sees
+three, district sees two, facility sees one, national sees all four test facilities.
+Those isolated fixtures are never inserted into the persistent development database.
 
-Existing system-admin route guards also permit national/state/district/facility
-pages. The admin account can manually inspect these presentations by URL; this is
-global administrator access, **not verification of regional identity or scope**.
-The login selector now offers assigned-role auto-detection, System Administrator,
-and Facility / inventory / read-only portal. It explains the unprovisioned regional
-profiles. Compatibility mappings/routes remain intact for future governed roles.
-The selector is not submitted as a backend permission grant; mismatches are rejected
-against `/users/me`, with no authenticated frontend state or retained local tokens.
+There is no native user-state or user-country scope model. State policy uses existing
+`UserDistrict` grants for every district currently belonging to the selected state.
+New districts are NOT automatically granted; rerunning after a district-set change
+fails safely instead of silently expanding scope. A production dynamic state policy
+would need a separate reviewed design. National policy uses supported global scope
+with operational permissions, not an India-only country boundary. Imported hospitals
+without verified block/district linkage remain excluded from regional accounts.
 
-## Expected navigation and actions
+## Capabilities, navigation and denials
 
-| Role | Navigation sections | Allowed | Must not imply / allow |
-|---|---|---|---|
-| administrator | Operational Data, System Management, Jurisdictions, Infrastructure | All 26 backend capabilities; global reference/operational reads, admin user/config/audit access; regional pages through existing guards | No business-rule bypass; no session after logout; unsupported AI/emergency implementations remain unavailable despite capability names |
-| dev_data_operator | Shared Operational Tools, Facility Operations, Clinical Care & Assets, Alerts & Profile | Selected facility inventory receive/issue, beds/workforce/equipment writes, alert management; reports/export and operational reads | Admin/config, procurement write/approve, transfers, recalls, outside-facility reads |
-| dev_data_inventory | Shared Operational Tools; Facility Operations without beds; Alerts & Profile; no Clinical Care & Assets | Four-facility inventory and transfers; procurement create/write; reports/export and alerts read | Admin/config, procurement approval, bed/workforce/equipment APIs, alert management, outside-scope facilities |
-| dev_data_reader | Shared Operational Tools, Facility Operations, Clinical Care & Assets, Alerts & Profile | Scoped operational/reference reads and reports/export | Operational writes, alert management, admin/config and outside-facility reads |
+Base operational policy (14): inventory.read/write, procurement.read,
+workforce.read/write, beds.read/write, equipment.read/write, alerts.read/manage,
+reports.read/export and integration.read.
 
-Mutation authorization above is the capability contract, not a claim that every
-possible mutation was executed in this account-only task. Existing state machines,
-FEFO, safety stock, facility scope, audit behavior and password hashing are unchanged.
-Catalogue/geography access still uses `inventory.read`; no permission was added to
-work around that existing contract. Reference endpoints are not all jurisdictional.
+- Facility and district: base operational policy within their scope.
+- State: base plus inventory.transfer and procurement.write.
+- National: state policy plus procurement.approve, global operational scope.
+- System: existing full catalogue including admin.users/admin.config/audit.read.
+- Existing inventory account retains its narrower inventory/procurement/report grants;
+  existing reader retains only read/export capabilities. No grants were changed.
 
-## Safe provisioning and passwords
+New policies do not grant admin.users, admin.config, audit.read, facility.manage,
+inventory.recall, integration.write, sync.write, emergency.activate or federation.manage.
+Roles never bypass FastAPI permission checks, `facility_filter`, `check_facility`,
+global-only restrictions or business/state rules. No authentication implementation,
+password hashing, application scope enforcement or migration was changed.
 
-From `backend`, with `backend/.venv` active:
+National, state and district sidebars now have real mapped identities. Existing
+capability filtering still hides unsupported emergency/federation/admin operations.
+Each account's visible links and destinations were checked against its real profile;
+regional landing pages remain their existing implementations, not redesigned pages.
+Shared reference catalogues/geography are not all jurisdiction-filtered. These are
+reference reads, not a claim of row-level isolation for every API in the product.
+
+Login offers all five presentation categories plus automatic detection. Selecting
+one never grants permissions. The selected category must match the authenticated
+backend role; all eight accounts were tested with a matching choice and a conflicting
+choice. Conflicts leave no authenticated frontend state or retained local token.
+
+## Provisioning and local credentials
+
+With `backend/.venv` active, from `backend`:
 
 ```powershell
-python -m scripts.development_data accounts --seed 20261003 --credentials-file ../tmp/development-data/credentials.json
+python -m scripts.development_data portals --state-id 79011528-6982-4209-9b12-43c1940df5c3 --district-id 114c8723-9f3c-45f3-bd24-4b7198ebbf27 --facility-id 617d9388-e638-47d8-81c6-ab953aee427e
 ```
 
-This uses the existing localhost / development / exact-database guard, advisory lock,
-owned operational seed receipt, and account provisioning helper. It verifies exact
-role grants, active owned facilities and existing account ownership. Unexpected role,
-scope, district assignment or password fails; the transaction rolls back. It never
-resets a password, modifies `arpan`, imports datasets or invents role policies.
+The command verifies development mode, localhost and exact database `sanjeevani_dev`,
+uses the existing advisory lock, validates the existing hierarchy, checks exact role
+permissions/account ownership/scope, and hashes passwords normally. It rejects
+conflicts rather than changing existing grants or resetting passwords. Replay created
+zero accounts. Four new users and four roles were created on the initial run.
 
-For a fresh compatible seeded environment, set `SANJEEVANI_DEV_TEST_PASSWORD` privately
-and omit `--credentials-file`. The shared value is hashed through the normal existing
-hasher. It takes precedence over a supplied file and must match any existing account;
-it is not a password-reset facility. No shared value is currently configured in this
-session; the existing per-account private credentials are preserved. Do not put actual
-passwords in tracked documentation or source code. The public command output provides
-username, category, role, exact permissions, assignment IDs, portal, landing and source.
+New random passwords live in ignored `tmp/development-data/portal-credentials.json`.
+Existing passwords remain in ignored `tmp/development-data/credentials.json`.
+`SANJEEVANI_DEV_TEST_PASSWORD` may supply the initial new-account passwords only when
+creating a new credential file; existing files/passwords are never overwritten.
+The credential file must resolve beneath ignored workspace `tmp/`.
 
-## Verification
+From repository root, this exact LOCAL PowerShell command displays all eight logins:
 
-- Backend affected suite: **14 passed** (`test_development_accounts.py`,
-  `test_development_data.py`, `test_frontend_auth_contract.py`); includes three new
-  matrix tests, account creation/replay, password-source precedence, conflict refusal,
-  protected administrator identity, scope, login and logout. No backend test skips.
-- Frontend targeted auth/functional tests: **48 passed**.
-- Complete normal frontend suite: **138 passed, 17 opt-in skips**.
-- Live rendered React + real HTTP: **4 passed**, one per account. Login form, actual
-  JWT/profile, landing, sidebar, guarded inventory and populated pages, forbidden
-  admin route for restricted users, regional allowance for system admin, mismatched
-  portal error, logout and old-token rejection verified. No HTTP mocks. Leaflet's DOM
-  renderer is mocked; this is not a browser visual test.
-- Real PostgreSQL-backed HTTP: all four `/api/v1/auth/login` -> `/api/v1/users/me`
-  profiles match exact roles, permissions and explicit assignments; inventory records
-  match SQL. `/api/v1/users` returns 200 for admin and 403 for all restricted accounts;
-  out-of-scope inventory returns 404 for each restricted account; inventory-role staff
-  reads and reader bed writes return 403. Logout -> old-token `/users/me` returns 401
-  for every account. A full-capability administrator has no artificial capability
-  denial; its denied check is the revoked session, not a fabricated restricted role.
-- `arpan`: all user columns (including password hash), roles, effective permissions,
-  facilities and districts unchanged; original pre-foundation signature also matches.
-- TypeScript and production build: **PASSED**; existing >500 kB chunk warning.
-- Browser automation: **UNAVAILABLE**, not claimed as passed.
-- Full backend/infrastructure suite not repeated for this development-script/login-UI
-  addition; preceding phase result remains **102 passed, 1 TimescaleDB skip**. It does
-  not include the three new matrix tests, which ran in the affected suite above.
-
-No commit, push, merge or deployment. Existing functional-completion work is preserved.
-
-## Exact verified backend permission sets
-
-**administrator** (26): `admin.config`, `admin.users`, `alerts.manage`, `alerts.read`, `audit.read`, `beds.read`, `beds.write`, `emergency.activate`, `equipment.read`, `equipment.write`, `facility.manage`, `federation.manage`, `integration.read`, `integration.write`, `inventory.read`, `inventory.recall`, `inventory.transfer`, `inventory.write`, `procurement.approve`, `procurement.read`, `procurement.write`, `reports.export`, `reports.read`, `sync.write`, `workforce.read`, `workforce.write`.
-
-**dev_data_inventory** (8): `alerts.read`, `inventory.read`, `inventory.transfer`, `inventory.write`, `procurement.read`, `procurement.write`, `reports.export`, `reports.read`.
-
-**dev_data_operator** (14): `alerts.manage`, `alerts.read`, `beds.read`, `beds.write`, `equipment.read`, `equipment.write`, `integration.read`, `inventory.read`, `inventory.write`, `procurement.read`, `reports.export`, `reports.read`, `workforce.read`, `workforce.write`.
-
-**dev_data_reader** (9): `alerts.read`, `beds.read`, `equipment.read`, `integration.read`, `inventory.read`, `procurement.read`, `reports.export`, `reports.read`, `workforce.read`.
-
-
-## Final working tree
-
-`git diff --check`: passed. No private credential value matches in changed/new files;
-no lockfile, migration or source CSV changes. The prior functional-completion changes
-are preserved. This task changes/adds DEVELOPMENT.md, this document, the prior audit
-checkpoint note, development_data.py, development_accounts.py, the HTTP verifier,
-test_development_accounts.py, LoginPage.tsx, authRoleRouting.test.tsx and
-functionalLive.integration.test.tsx.
-
-```text
- M DEVELOPMENT.md
- M backend/app/api/v1/endpoints/geography.py
- M backend/app/schemas/outputs.py
- M backend/app/services/datasets.py
- M backend/app/services/geography.py
- M backend/scripts/development_data.py
- M backend/tests/test_postgres.py
- M frontend/src/app/navigationConfig.ts
- M frontend/src/components/common/BackendData.tsx
- M frontend/src/components/common/RoleSidebar.tsx
- M frontend/src/modules/auth/LoginPage.tsx
- M frontend/src/modules/equipment/EquipmentPage.tsx
- M frontend/src/modules/facilities/FacilitiesPage.tsx
- M frontend/src/modules/inventory/InventoryPage.tsx
- M frontend/src/modules/map/InteractiveResourceMap.tsx
- M frontend/src/modules/workforce/WorkforcePage.tsx
- M frontend/src/services/backendTypes.ts
- M frontend/src/test/authRoleRouting.test.tsx
-?? DEVELOPMENT_ACCOUNT_MATRIX.md
-?? FUNCTIONAL_COMPLETION_AUDIT.md
-?? backend/app/services/location_context.py
-?? backend/scripts/data/development_city_references.json
-?? backend/scripts/development_accounts.py
-?? backend/scripts/development_enrichment.py
-?? backend/scripts/verify_functional_completion.py
-?? backend/tests/test_development_accounts.py
-?? backend/tests/test_development_enrichment.py
-?? frontend/src/test/functionalCompletion.test.tsx
-?? frontend/src/test/functionalLive.integration.test.tsx
+```powershell
+$files = @('.\tmp\development-data\credentials.json', '.\tmp\development-data\portal-credentials.json')
+foreach ($file in $files) {
+    $records = Get-Content -LiteralPath $file -Raw | ConvertFrom-Json
+    $records.PSObject.Properties.Value | Select-Object username, password
+}
 ```
+
+Do not copy the output into tracked files. No actual passwords are in this document.
+
+## Verification results
+
+- Affected backend authorization/development suite: **29 passed**, no skips:
+  test_development_portals, test_development_accounts, test_development_data,
+  test_security, test_identity, test_report_jobs_scopes, test_frontend_auth_contract.
+- New portal tests exercise normal JWT auth against both SQLite and migrated disposable
+  PostgreSQL/PostGIS schemas via FastAPI ASGI transport. Cross-state, cross-district
+  and cross-facility reads and writes are allowed/denied at the backend; rejected bed
+  writes leave no database row. Idempotency, wrong hierarchy and password conflict
+  refusal are covered. This is API/PostgreSQL verification, not a browser test.
+- Real network HTTP: **8 accounts passed**, `/api/v1/auth/login` -> JWT ->
+  `/api/v1/users/me` roles/permissions/scope matched independent SQL, facility directory
+  matched SQL scope, permitted inventory reads, denied admin reads/writes, outside-scope
+  inventory/bed denial, `/api/v1/auth/logout` -> old-token reads/writes 401.
+- Four new portal accounts each performed an allowed bed PUT, verified in SQL and a
+  subsequent GET. The four labeled `DEV-PORTAL-*` bed categories (capacity 2, occupied 1)
+  belong only to the existing synthetic hospital. They are verification fixtures, not
+  clinical observations. Existing bed categories were not overwritten. Existing account
+  mutation capabilities were not newly expanded; the read-only profile remains read-only.
+- `arpan`: provisioner and HTTP verifier compare all identity columns including hash,
+  roles, effective permissions, facility and district assignments; unchanged.
+- Rendered React + real HTTP: **8 passed**, matching dropdown choice, JWT profile,
+  landing, complete permitted navigation, guarded real facility rendering, restricted
+  admin-route denial, logout invalidation and mismatched portal rejection.
+- Normal frontend suite: **138 passed, 25 opt-in skips**, including the eight live tests
+  that were separately enabled and passed. No skipped test counted as passed.
+- TypeScript (`tsc`) and production build: **passed**. Existing >500 kB chunk warning.
+- Actual browser automation: **NOT RUN**; rendered React checks are not browser acceptance.
+- Full backend suite: **NOT RUN for this task**; relevant authorization tests above ran.
+
+Real HTTP command: `python -m scripts.verify_development_portals` from backend.
+It targets localhost:8001 and validates the development DB before any fixture writes.
+Live frontend command (Node 24, frontend directory):
+
+```powershell
+$env:VITE_BACKEND_URL='http://127.0.0.1:8001'
+$env:PORTAL_ACCOUNTS_LIVE='1'
+npm test -- src/test/portalAccountsLive.integration.test.tsx
+Remove-Item Env:PORTAL_ACCOUNTS_LIVE
+```
+
+All five portals can now be tested as development identities. Real regional operational
+coverage, dynamic future-district membership and country-boundary isolation remain
+limitations, not verified production features. No unsupported frontend metric was added.
+
+## Isolated branch verification
+
+After separating from the UI redesign, the dedicated account worktree passed
+29 affected backend tests, 138 normal frontend tests (25 opt-in skips), and all
+eight explicitly enabled real-account React/HTTP checks. TypeScript and production
+build passed with the existing chunk-size warning. Real HTTP verification confirmed
+eight accounts and unchanged arpan identity. The running local FastAPI application
+code is identical to this branch; only development scripts and frontend functional
+role choices differ. No UI redesign styling is included.
+
+The first isolated live run hit the unchanged 20-logins/60-second development rate
+limit after the separate HTTP checks (6 passed, 2 rate-limited). After the window
+expired, all 8 passed without changing the limiter or test assertions.

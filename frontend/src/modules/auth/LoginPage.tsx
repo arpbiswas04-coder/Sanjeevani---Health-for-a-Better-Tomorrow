@@ -135,14 +135,14 @@ export const LoginPage: React.FC = () => {
                   <option value="">
                     Use my assigned role
                   </option>
-                  {(['SUPER_ADMIN', 'FACILITY_ADMIN'] as Role[]).map((rKey) => (
+                  {(Object.keys(ROLE_LABELS) as Role[]).map((rKey) => (
                     <option key={rKey} value={rKey}>
                       {rKey === 'FACILITY_ADMIN' ? 'Facility / inventory / read-only portal' : ROLE_LABELS[rKey]} ({rKey})
                     </option>
                   ))}
                 </select>
               </div>
-              <p className="text-xs text-slate-400 mt-1">The backend assigns access. National, state and district portals have no provisioned role profiles in this deployment.</p>
+              <p className="text-xs text-slate-400 mt-1">The backend assigns access. Select your assigned portal or use automatic detection; this selection never grants permissions.</p>
             </div>
 
             {/* Email / Username Input */}
