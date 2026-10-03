@@ -1,3 +1,4 @@
+// LEGACY DEMONSTRATION ONLY: not mounted by the current application router.
 import React, { useState } from 'react';
 import { useUIStore, UserRole } from '@/store/uiStore';
 import { useTranslation } from 'react-i18next';

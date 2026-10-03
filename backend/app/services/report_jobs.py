@@ -10,6 +10,7 @@ from app.security.scope import check_facility,global_only
 from app.services.inventory import audit
 from app.services.reports import report
 from app.services.exports import export
+from app.services.idempotency import replay,remember
 
 
 async def authorize(db,user,facility_id,kind):
@@ -29,11 +30,19 @@ async def request(db,user,payload,schedule=False):
     if schedule:
         row=ReportSchedule(owner_id=user.id,**payload.model_dump(),next_run=datetime.now(timezone.utc))
     else:
-        row=ReportJob(owner_id=user.id,**payload.model_dump(),expires_at=datetime.now(timezone.utc)+timedelta(days=1))
+        if getattr(payload,'idempotency_key',None):
+            # Serialize this actor's keyed requests before checking the receipt.
+            # The job and receipt commit together in the request transaction.
+            await db.scalar(select(User).where(User.id==user.id).with_for_update())
+            previous=await replay(db,user.id,'report.request',payload)
+            if previous is not None:
+                return previous
+        row=ReportJob(owner_id=user.id,**payload.model_dump(exclude={'idempotency_key'}),expires_at=datetime.now(timezone.utc)+timedelta(days=1))
     db.add(row)
     await db.flush()
     audit(db,user.id,'report.scheduled' if schedule else 'report.requested',{'id':str(row.id)})
-    return serialize(row,('content',))
+    result=serialize(row,('content',))
+    return result if schedule else remember(db,user.id,'report.request',payload,result)
 
 
 async def due_schedules(db):

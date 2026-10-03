@@ -3,6 +3,7 @@
 help:
 	@echo "Sanjeevani Grid - Command Reference"
 	@echo "==================================="
+	@echo "Integrated setup: DEVELOPMENT.md. Root Compose targets below are legacy scaffolding."
 	@echo "make init             - Copy .env.example to .env if missing"
 	@echo "make up               - Start all services with Docker Compose"
 	@echo "make down             - Stop all Docker Compose services"
@@ -37,16 +38,16 @@ ps:
 	docker compose ps
 
 install-frontend:
-	cd frontend && npm install
+	cd frontend && npm ci
 
 install-backend:
-	cd backend && pip install -r requirements.txt
+	cd backend && python -c "import pathlib,sys; assert sys.prefix != sys.base_prefix and pathlib.Path(sys.prefix).resolve() == pathlib.Path('.venv').resolve(), 'Activate backend/.venv first'" && python -m pip install -r requirements.txt
 
 test-backend:
-	cd backend && pytest
+	cd backend && python -c "import pathlib,sys; assert sys.prefix != sys.base_prefix and pathlib.Path(sys.prefix).resolve() == pathlib.Path('.venv').resolve(), 'Activate backend/.venv first'" && python -m pytest -q
 
 test-frontend:
-	cd frontend && npm run build
+	cd frontend && npm test && npm run build
 
 test: test-backend test-frontend
 

@@ -4,6 +4,8 @@
 .env.development
 .env.production
 .env.staging
+.env.*
+!.env.example
 
 # Dependencies & Build artifacts
 node_modules/
@@ -43,6 +45,8 @@ share/python-wheels/
 .coverage
 htmlcov/
 coverage.xml
+coverage/
+celerybeat-schedule*
 
 # IDE & Editors
 .idea/

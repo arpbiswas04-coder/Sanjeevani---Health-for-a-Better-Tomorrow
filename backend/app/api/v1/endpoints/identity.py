@@ -23,9 +23,9 @@ async def administrator(user: User = Depends(require('admin.users'))):
     return user
 
 
-@router.get('/users/me', response_model=out.Success[out.UserView], response_model_exclude_unset=True)
-async def me(user: User = Depends(current_user)):
-    return data(serialize(user, ('token_version',)))
+@router.get('/users/me', response_model=out.Success[out.CurrentUserView], response_model_exclude_unset=True)
+async def me(user: User = Depends(current_user), db: AsyncSession = Depends(get_db, scope="function")):
+    return data(await identity.profile(db, user))
 
 
 @router.post('/auth/refresh', response_model=out.Success[out.TokenPair], response_model_exclude_unset=True)

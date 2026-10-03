@@ -27,18 +27,16 @@ describe('Member 1 Blueprint — Phase & Critical Flow Verification', () => {
 
   // 1. Authentication & Role Presets
   describe('Phase 2 — Authentication & Role Presets', () => {
-    it('renders login credentials form and prefilled role credentials', () => {
+    it('renders empty credentials and never autofills demo accounts when selecting a role', () => {
       renderWithRouter(<LoginPage />);
 
       expect(screen.getByText(/Command Access Portal/i)).toBeInTheDocument();
       expect(screen.getByRole('button', { name: /Sign In to Command Portal/i })).toBeInTheDocument();
 
-      // Click role preset button (District Health Authority)
-      const roleBtn = screen.getByRole('button', { name: /District Health Authority/i });
-      fireEvent.click(roleBtn);
-
-      const emailInput = screen.getByDisplayValue(/district.lucknow@sanjeevani.gov.in/i) as HTMLInputElement;
-      expect(emailInput).toBeInTheDocument();
+      fireEvent.change(screen.getByLabelText('Role'), { target: { value: 'DISTRICT_ADMIN' } });
+      expect(screen.getByLabelText('Official Email / Username')).toHaveValue('');
+      expect(screen.getByLabelText('Passcode / Password')).toHaveValue('');
+      expect(screen.queryByText(/Fast Role Demo Presets/)).not.toBeInTheDocument();
     });
 
     it('validates password visibility toggle', () => {
@@ -53,94 +51,7 @@ describe('Member 1 Blueprint — Phase & Critical Flow Verification', () => {
     });
   });
 
-  // 2. Phase 5 — Inventory UI
-  describe('Phase 5 — Inventory & Stock Monitoring', () => {
-    it('renders real-time medicine inventory table and stock items', () => {
-      renderWithRouter(<InventoryPage />);
-
-      expect(screen.getByText(/Real-Time Stock Monitoring & Batch Tracking/i)).toBeInTheDocument();
-      expect(screen.getByText(/Paracetamol IV Infusion/i)).toBeInTheDocument();
-      expect(screen.getByText(/Ceftriaxone Injection/i)).toBeInTheDocument();
-      expect(screen.getByText(/Insulin Human Regular/i)).toBeInTheDocument();
-    });
-
-    it('filters inventory when typing into search input', () => {
-      renderWithRouter(<InventoryPage />);
-
-      const searchInput = screen.getByPlaceholderText(/Search by drug name, batch #, or facility.../i);
-      fireEvent.change(searchInput, { target: { value: 'Insulin' } });
-
-      expect(screen.getByText(/Insulin Human Regular/i)).toBeInTheDocument();
-      expect(screen.queryByText(/Paracetamol 500mg/i)).not.toBeInTheDocument();
-    });
-
-    it('opens inter-facility redistribution transfer modal on click', () => {
-      renderWithRouter(<InventoryPage />);
-
-      const transferBtns = screen.getAllByRole('button', { name: /Transfer/i });
-      fireEvent.click(transferBtns[0]);
-
-      expect(screen.getByText(/Inter-Facility Stock Redistribution/i)).toBeInTheDocument();
-    });
-  });
-
-  // 3. Phase 8 — Emergency Command UI
-  describe('Phase 8 — Emergency Command Mode & What-If Simulation', () => {
-    it('renders Emergency Command center and DEFCON readiness status', () => {
-      renderWithRouter(<EmergencyPage />);
-
-      expect(screen.getByText(/Emergency Command & Crisis Mobilization/i)).toBeInTheDocument();
-      expect(screen.getByText(/DEFCON-1 Active/i)).toBeInTheDocument();
-      expect(screen.getByText(/Vulnerability Deficit Priority Matrix/i)).toBeInTheDocument();
-    });
-
-    it('toggles emergency override protocol button', () => {
-      renderWithRouter(<EmergencyPage />);
-
-      const toggleBtn = screen.getByRole('button', { name: /DISENGAGE CRISIS/i });
-      fireEvent.click(toggleBtn);
-
-      expect(screen.getByRole('button', { name: /ACTIVATE CRISIS MODE/i })).toBeInTheDocument();
-    });
-
-    it('allows parameter adjustments in What-If crisis simulation scenario', () => {
-      renderWithRouter(<EmergencyPage />);
-
-      expect(screen.getByText(/Scenario Simulation Engine/i)).toBeInTheDocument();
-      const runSimBtn = screen.getByRole('button', { name: /Compute Resilience Impact/i });
-      expect(runSimBtn).toBeInTheDocument();
-      fireEvent.click(runSimBtn);
-
-      expect(screen.getByText(/Solving Constraint Matrices.../i)).toBeInTheDocument();
-    });
-  });
-
-  // 4. Feature 58 — Alert Management UI
-  describe('Feature 58 — Alert Management & Threshold Rules', () => {
-    it('renders incident feed and allows incident acknowledgment', () => {
-      renderWithRouter(<AlertsPage />);
-
-      expect(screen.getByText(/Emergency Alert Management & Threshold Rules/i)).toBeInTheDocument();
-      expect(screen.getByText(/Severe Insulin Stock-out Horizon/i)).toBeInTheDocument();
-
-      const ackButtons = screen.getAllByRole('button', { name: /Acknowledge/i });
-      expect(ackButtons.length).toBeGreaterThan(0);
-      fireEvent.click(ackButtons[0]);
-
-      expect(screen.getAllByText(/Acknowledged/i).length).toBeGreaterThan(0);
-    });
-
-    it('switches to threshold rules engine tab and displays active rules', () => {
-      renderWithRouter(<AlertsPage />);
-
-      const rulesTab = screen.getByRole('button', { name: /Threshold Engine/i });
-      fireEvent.click(rulesTab);
-
-      expect(screen.getByText(/Automated Alert Triggers & Early Warning Rules/i)).toBeInTheDocument();
-      expect(screen.getByText(/Medicine Days-of-Inventory \(DOI\)/i)).toBeInTheDocument();
-      expect(screen.getByText(/ICU Bed Occupancy Rate/i)).toBeInTheDocument();
-    });
-  });
+  // Operational integration coverage: dataIntegration.test.tsx; fabricated workflow assertions removed.
 
   // 5. Offline Storage & PWA Telemetry Queue
   describe('PWA & Offline Telemetry Queue', () => {

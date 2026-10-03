@@ -11,6 +11,7 @@ sys.path.insert(0, os.path.realpath(os.path.join(os.path.dirname(__file__), '..'
 
 from app.core.config import settings
 from app.core.database import Base
+from app.core.migration_filters import extension_table_filter
 import app.models
 
 config = context.config
@@ -62,9 +63,21 @@ def run_migrations_online() -> None:
                 raise RuntimeError('Test migration schema requires a disposable _test database and generated schema name')
             connection.exec_driver_sql(f'SET search_path TO "{test_schema}", public')
             connection.commit()
+        include_extension_name = extension_table_filter(connection)
+        def include_name(name, type_, parents):
+            # With search_path-based test isolation, reflection reports the
+            # schema-qualified version table as schema=None. It is Alembic's
+            # own bookkeeping, not an unmanaged application table.
+            if test_schema and type_ == 'table' and name == 'alembic_version' and parents.get('schema_name') in (None, test_schema):
+                return False
+            return include_extension_name(name, type_, parents)
+        # Catalog reflection starts SQLAlchemy's implicit transaction. Finish
+        # that read before Alembic takes ownership of its migration transaction.
+        connection.commit()
         context.configure(
             connection=connection, target_metadata=target_metadata, render_as_batch=True,
-            version_table_schema=test_schema or None, include_object=include_object
+            version_table_schema=test_schema or None, include_object=include_object,
+            include_name=include_name
         )
 
         with context.begin_transaction():

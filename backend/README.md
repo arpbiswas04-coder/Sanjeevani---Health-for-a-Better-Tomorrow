@@ -1,5 +1,7 @@
 # Sanjeevani Member 2 backend
 
+Current integrated setup: [../DEVELOPMENT.md](../DEVELOPMENT.md). Current audit: [../FINAL_READINESS_AUDIT.md](../FINAL_READINESS_AUDIT.md). Older implementation reports retain their historical test results.
+
 The backend extends the original FastAPI foundation. It includes authentication,
 scoped RBAC, geography, inventory, redistribution, supply-chain operations, beds,
 workforce, operational aggregates, alerts, reports and integration boundaries.
@@ -23,7 +25,7 @@ cd backend
 
 Use Command Prompt activation if PowerShell execution policy blocks Activate.ps1.
 Run backend commands from `backend`. Settings read `backend/.env`; Compose reads
-root `.env`. Both files, `.venv`, bytecode and local test databases are ignored.
+.env specified by `--env-file`; the supported development command uses `backend/.env`. Environment files, `.venv`, bytecode and local test databases are ignored.
 The root `.env.example` contains variable names only. Empty entries are ignored by
 backend settings. Supply real values in untracked environment files/secret storage.
 
@@ -81,9 +83,10 @@ catalogue and global scope through migration. Other existing users become restri
 and need explicit facility/district assignments. No migration is applied automatically
 at application startup. Preserve the existing migration chain; do not edit deployed revisions.
 
-Temperature observations have indexed UTC timestamps. TimescaleDB is deliberately
-not enabled without measured volume/retention requirements. A future hypertable
-conversion needs a reviewed migration accounting for time-partitioned unique keys.
+Temperature observations have indexed UTC timestamps. Optional TimescaleDB support
+is implemented by migration b72c8d013f24 with `ENABLE_TIMESCALEDB=1`; it requires a
+compatible TimescaleDB/PostGIS server. The verified development image provides
+PostGIS only, so its TimescaleDB-specific test remains explicitly skipped.
 
 ## API and authentication
 

@@ -65,8 +65,6 @@ async def login(db, username, password, mfa_proof=None):
     result = await pair(db, user)
     audit(db, user.id, 'auth.login', {})
     return result
-
-
 async def rotate(db, token):
     try:
         claims = jwt.decode(token, secret(), algorithms=['HS256'], issuer='sanjeevani',
@@ -143,3 +141,23 @@ async def confirm_reset(db, payload):
     await revoke_all(db, user)
     await db.execute(update(PasswordReset).where(PasswordReset.user_id == user.id).values(used=True))
     audit(db, user.id, 'auth.password_reset', {})
+
+
+async def profile(db, user):
+    """Resolve current grants from the database, never from client/JWT role claims."""
+    from sqlalchemy import select
+    from app.models import Role, Permission, UserRole, RolePermission
+    from app.models.identity import UserFacility, UserDistrict
+    from app.repositories.common import serialize
+    result = serialize(user, ('token_version',))
+    result['roles'] = list(await db.scalars(select(Role.name).join(UserRole).where(
+        UserRole.user_id == user.id).order_by(Role.name)))
+    result['permissions'] = list(await db.scalars(select(Permission.name)
+        .join(RolePermission, RolePermission.permission_id == Permission.id)
+        .join(UserRole, UserRole.role_id == RolePermission.role_id)
+        .where(UserRole.user_id == user.id).distinct().order_by(Permission.name)))
+    result['facility_ids'] = list(await db.scalars(select(UserFacility.facility_id)
+        .where(UserFacility.user_id == user.id).order_by(UserFacility.facility_id)))
+    result['district_ids'] = list(await db.scalars(select(UserDistrict.district_id)
+        .where(UserDistrict.user_id == user.id).order_by(UserDistrict.district_id)))
+    return result

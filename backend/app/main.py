@@ -6,6 +6,10 @@ from app.core.database import engine
 @asynccontextmanager
 async def lifespan(app):
     if settings.APP_ENV == "production":
+        required = {'DATABASE_URL', 'REDIS_URL', 'FRONTEND_URL', 'BACKEND_URL', 'BACKEND_CORS_ORIGINS'}
+        missing = required - settings.model_fields_set
+        if missing:
+            raise RuntimeError('Production requires explicit configuration: ' + ', '.join(sorted(missing)))
         if not settings.DATABASE_URL or not settings.DATABASE_URL.startswith("postgresql"):
             raise RuntimeError("Production requires an explicit PostgreSQL DATABASE_URL")
         if not settings.JWT_SECRET or len(settings.JWT_SECRET) < 32 or not settings.REDIS_URL:

@@ -29,9 +29,11 @@ jobs:
       - name: Install dependencies
         working-directory: ./backend
         run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
+          python -m venv .venv
+          source .venv/bin/activate
+          python -c "import sys; from pathlib import Path; assert sys.prefix != sys.base_prefix and Path(sys.prefix).resolve() == Path('.venv').resolve()"
+          python -m pip install -r requirements.txt
 
       - name: Run Pytest
         working-directory: ./backend
-        run: pytest
+        run: .venv/bin/python -m pytest -q -rs

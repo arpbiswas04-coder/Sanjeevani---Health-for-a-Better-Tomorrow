@@ -46,8 +46,8 @@ export const OfflineIndicator: React.FC = () => {
           {!isOnline ? <WifiOff className="w-4 h-4 animate-bounce" /> : <Wifi className="w-4 h-4" />}
           <span>
             {!isOnline
-              ? 'Offline Mode Active — Telemetry actions saved to local sync queue (IndexedDB)'
-              : 'Reconnected to Sanjeevani Grid Mesh'}
+              ? 'Offline - backend requests are unavailable. Automatic synchronization is not connected.'
+              : 'Browser network restored - backend connectivity has not been verified.'}
           </span>
         </div>
 
@@ -58,14 +58,12 @@ export const OfflineIndicator: React.FC = () => {
             </span>
             {isOnline && (
               <button
-                onClick={() => {
-                  offlineStorage.clearQueue();
-                  setQueueCount(0);
-                }}
+                disabled
+                title="Synchronization is not implemented; queued records are preserved."
                 className="px-2 py-0.5 bg-white text-slate-900 rounded font-bold hover:bg-slate-100 flex items-center gap-1 text-[11px] transition-colors"
               >
                 <RefreshCw className="w-3 h-3" />
-                Sync Now
+                Sync unavailable
               </button>
             )}
           </div>

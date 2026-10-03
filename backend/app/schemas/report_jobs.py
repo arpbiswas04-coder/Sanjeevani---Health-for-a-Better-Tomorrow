@@ -10,5 +10,9 @@ class ReportRequest(Input):
     format:Literal['csv','xlsx','pdf']='csv'
 
 
+class ReportJobRequest(ReportRequest):
+    idempotency_key:str|None=Field(default=None,min_length=1,max_length=100)
+
+
 class ScheduleRequest(ReportRequest):
     interval_minutes:int=Field(ge=30,le=525600)

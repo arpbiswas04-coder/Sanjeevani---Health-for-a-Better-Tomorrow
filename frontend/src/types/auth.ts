@@ -33,6 +33,11 @@ export type Permission =
   | 'system:config';
 
 export interface User {
+  backendRoles?: string[];
+  backendPermissions?: string[];
+  scopeMode?: string;
+  facilityIds?: string[];
+  districtIds?: string[];
   id: string;
   name: string;
   email: string;
@@ -50,7 +55,8 @@ export interface User {
 export interface LoginRequest {
   email: string;
   password: string;
-  role: Role;
+  role?: Role;
+  mfaProof?: string;
   rememberMe?: boolean;
 }
 

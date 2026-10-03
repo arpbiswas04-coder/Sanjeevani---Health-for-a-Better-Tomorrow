@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { useAuthStore } from '@/store/authStore';
+import { canAccessPath } from '@/app/authorization';
 import { useNavigate } from 'react-router-dom';
 import { useUIStore } from '@/store/uiStore';
 import { useTranslation } from 'react-i18next';
@@ -22,6 +24,7 @@ import {
 export const CommandPalette: React.FC = () => {
   const { isCommandPaletteOpen, setCommandPaletteOpen, toggleTheme, theme, setActiveRole, activeRole } =
     useUIStore();
+  const user = useAuthStore(state => state.user);
   const [query, setQuery] = useState('');
   const navigate = useNavigate();
   const { t } = useTranslation();
@@ -55,7 +58,7 @@ export const CommandPalette: React.FC = () => {
   ];
 
   const filteredItems = navigationItems.filter((item) =>
-    item.label.toLowerCase().includes(query.toLowerCase())
+    (item.path === '/' || canAccessPath(item.path, user)) && item.label.toLowerCase().includes(query.toLowerCase())
   );
 
   const handleSelect = (path: string) => {
@@ -139,17 +142,7 @@ export const CommandPalette: React.FC = () => {
                 </>
               )}
             </button>
-            <button
-              onClick={() => {
-                const nextRole = activeRole === 'national_officer' ? 'district_officer' : 'national_officer';
-                setActiveRole(nextRole);
-                setCommandPaletteOpen(false);
-              }}
-              className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-slate-300 hover:bg-slate-800 transition-colors"
-            >
-              <Shield className="w-4 h-4 text-emerald-400" />
-              <span>Simulate Role: {activeRole === 'national_officer' ? 'District Officer' : 'National Officer'}</span>
-            </button>
+
           </div>
         </div>
 

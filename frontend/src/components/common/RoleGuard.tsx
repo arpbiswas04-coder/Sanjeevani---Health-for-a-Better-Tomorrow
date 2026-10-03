@@ -3,6 +3,7 @@ import { Navigate, useLocation, Outlet } from 'react-router-dom';
 import { useAuthStore } from '@/store/authStore';
 import { Role } from '@/types/auth';
 import { LoadingScreen } from '@/components/ui/LoadingScreen';
+import { canAccessPath } from '@/app/authorization';
 
 interface RoleGuardProps {
   allowedRoles?: Role[];
@@ -10,7 +11,7 @@ interface RoleGuardProps {
 }
 
 export const RoleGuard: React.FC<RoleGuardProps> = ({ allowedRoles, children }) => {
-  const { isAuthenticated, role, isRestoring, restoreSession } = useAuthStore();
+  const { isAuthenticated, role, user, isRestoring, restoreSession } = useAuthStore();
   const location = useLocation();
 
   useEffect(() => {
@@ -27,7 +28,7 @@ export const RoleGuard: React.FC<RoleGuardProps> = ({ allowedRoles, children }) 
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
-  if (allowedRoles && allowedRoles.length > 0 && !allowedRoles.includes(role)) {
+  if ((allowedRoles && allowedRoles.length > 0 && !allowedRoles.includes(role)) || !canAccessPath(location.pathname, user)) {
     return <Navigate to="/unauthorized" state={{ attemptedUrl: location.pathname, currentRole: role }} replace />;
   }
 
