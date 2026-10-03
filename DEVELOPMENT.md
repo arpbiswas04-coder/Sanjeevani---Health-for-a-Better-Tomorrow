@@ -382,11 +382,12 @@ persistent development database as a destructive test target.
 ### Manual role testing
 
 See [DEVELOPMENT_ACCOUNT_MATRIX.md](DEVELOPMENT_ACCOUNT_MATRIX.md) for every actual
-role, login, scope, permission set, expected navigation and unsupported regional alias.
-The existing four `dev-data-*` accounts cover all four provisioned backend roles;
-no duplicate accounts or invented national/state/district policies are needed.
+role, login, scope, permission set and expected navigation. The four existing
+`dev-data-*` accounts are preserved. Four additional development policies/accounts
+cover national, state, district and facility portals using the existing synthetic
+hierarchy; state scope is an explicit snapshot of its districts, not a new scope mode.
 
-With `backend/.venv` active, from `backend`, validate/reuse the local matrix:
+With `backend/.venv` active, from `backend`, validate/reuse the original account matrix:
 
 ```powershell
 python -m scripts.development_data accounts --seed 20261003 --credentials-file ../tmp/development-data/credentials.json
@@ -398,3 +399,9 @@ per-account value in the explicit private credentials file. The command refuses
 password conflicts and never resets existing accounts. Do not commit secret values.
 In this local environment existing per-account passwords remain in the ignored file;
 there is no configured shared password. The `arpan` administrator is unchanged.
+
+For the four additional portal accounts, use the `portals` command and exact existing
+hierarchy IDs in DEVELOPMENT_ACCOUNT_MATRIX.md. Their generated credentials are in
+ignored `tmp/development-data/portal-credentials.json`. That document includes the
+local PowerShell command to display all eight logins, verified permissions, isolation
+results and the synthetic hierarchy limitations. Do not copy passwords into Git.

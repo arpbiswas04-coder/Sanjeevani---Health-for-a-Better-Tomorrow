@@ -16,7 +16,7 @@ import re
 import sqlite3
 import tempfile
 import unicodedata
-from uuid import uuid4
+from uuid import UUID, uuid4
 
 from sqlalchemy import select,text,func,or_
 from sqlalchemy.engine import make_url
@@ -217,6 +217,11 @@ def parser():
     q=sub.add_parser('enrich');q.add_argument('--seed',type=int,required=True)
     q=sub.add_parser('accounts');q.add_argument('--seed',type=int,required=True)
     q.add_argument('--credentials-file',type=Path)
+    q=sub.add_parser('portals')
+    q.add_argument('--state-id',type=UUID,required=True)
+    q.add_argument('--district-id',type=UUID,required=True)
+    q.add_argument('--facility-id',type=UUID,required=True)
+    q.add_argument('--credentials-file',type=Path,default=ROOT/'tmp/development-data/portal-credentials.json')
     return p
 
 
@@ -233,6 +238,9 @@ async def main(args):
                 names=MEDICINES if args.command=='medicines' else (FACILITIES,)
                 result=await import_catalogue(AsyncSessionLocal,args.command,[args.source_dir/n for n in names],
                     None if args.full else (args.limit if args.limit is not None else (200 if args.command=='medicines' else 50)),args.batch_size)
+            elif args.command=='portals':
+                from scripts.development_portals import portals
+                result=await portals(args)
             elif args.command=='accounts':
                 from scripts.development_accounts import accounts
                 result=await accounts(args)
