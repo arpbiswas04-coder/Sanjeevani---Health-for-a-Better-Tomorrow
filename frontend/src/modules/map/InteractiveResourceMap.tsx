@@ -27,7 +27,7 @@ export const InteractiveResourceMap: React.FC = () => {
     {[directory.countries, directory.states, directory.districts, directory.blocks].map((q, i) => q.error ? <DataState key={i} query={q}>{null}</DataState> : null)}
     <DataState query={query} empty={!rows.length}>
       <div className="h-[620px] w-full rounded-2xl overflow-hidden border border-slate-800 shadow-2xl relative"><MapContainer center={[22.5, 80.5]} zoom={5} scrollWheelZoom className="h-full w-full">
-        <TileLayer attribution='&copy; OpenStreetMap contributors &copy; CARTO' url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png" />
+        <TileLayer attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors' url="https://tile.openstreetmap.org/{z}/{x}/{y}.png" maxZoom={19} />
         {plotted.map(f => <CircleMarker key={f.id} center={[f.latitude!, f.longitude!]} radius={9} pathOptions={{ color: f.facility_type.toLowerCase() === 'warehouse' ? '#f59e0b' : '#38bdf8' }}><Popup><div className="space-y-2"><strong>{f.name}</strong><p>{f.facility_type} / {f.code}</p><p>{f.address || 'Address not recorded'}</p><p>{directory.geographyPending ? 'Loading geography...' : directory.geographyUnavailable ? 'Geography unavailable' : Object.values(directory.location(f)).map(v => v?.name).filter(Boolean).join(', ') || 'Geography not recorded'}</p><p>{f.contact || 'Contact not recorded'}</p></div></Popup></CircleMarker>)}
       </MapContainer></div>
     </DataState>

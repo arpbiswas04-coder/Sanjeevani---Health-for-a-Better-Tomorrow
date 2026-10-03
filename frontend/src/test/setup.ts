@@ -27,7 +27,7 @@ global.ResizeObserver = class ResizeObserver {
 // Mock react-leaflet for headless JSDOM testing using React.createElement
 vi.mock('react-leaflet', () => ({
   MapContainer: ({ children }: any) => React.createElement('div', { 'data-testid': 'map-container' }, children),
-  TileLayer: () => React.createElement('div', { 'data-testid': 'tile-layer' }),
+  TileLayer: ({ url, attribution }: any) => React.createElement('div', { 'data-testid': 'tile-layer', 'data-url': url, 'data-attribution': attribution }),
   CircleMarker: ({ children }: any) => React.createElement('div', { 'data-testid': 'circle-marker' }, children),
   Circle: ({ children }: any) => React.createElement('div', { 'data-testid': 'circle' }, children),
   Popup: ({ children }: any) => React.createElement('div', { 'data-testid': 'popup' }, children),

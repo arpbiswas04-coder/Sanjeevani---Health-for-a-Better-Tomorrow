@@ -43,6 +43,8 @@ it('renders backend facility metadata and filters actual records without invente
 it('renders only backend map coordinates and disables unsupported heatmaps',async()=>{
  mockDataServer({'/facilities':[fixtureFacility,{...fixtureFacility,id:'missing',name:'No coordinates',latitude:null,longitude:null}]});renderData(<InteractiveResourceMap/>);
  await screen.findByText(/Nodes visible: 1/);expect(screen.getAllByTestId('circle-marker')).toHaveLength(1);
+ expect(screen.getByTestId('tile-layer')).toHaveAttribute('data-url','https://tile.openstreetmap.org/{z}/{x}/{y}.png');
+ expect(screen.getByTestId('tile-layer').getAttribute('data-attribution')).toContain('https://www.openstreetmap.org/copyright');
  expect(screen.getByText(/1 facilities without coordinates/)).toBeInTheDocument();expect(screen.getByRole('button',{name:/Disease Heatmap/})).toBeDisabled();
 });
 it('renders inventory and batches from the selected facility without fake dispensing or transfer actions',async()=>{
