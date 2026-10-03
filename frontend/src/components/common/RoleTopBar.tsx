@@ -40,38 +40,7 @@ export const RoleTopBar: React.FC = () => {
 
   // Determine current scope based on role and user assignment
   const getScopeLabel = (): { title: string; subtitle: string } => {
-    switch (role) {
-      case 'SUPER_ADMIN':
-        return {
-          title: 'System Infrastructure',
-          subtitle: 'Zero-Trust Central Mesh',
-        };
-      case 'NATIONAL_ADMIN':
-        return {
-          title: 'National Command',
-          subtitle: 'Republic of India (All States & UTs)',
-        };
-      case 'STATE_ADMIN':
-        return {
-          title: user?.state || 'State Jurisdiction',
-          subtitle: 'State Health Authority',
-        };
-      case 'DISTRICT_ADMIN':
-        return {
-          title: `${user?.district || 'District'} District`,
-          subtitle: user?.state || 'State Health Sub-Division',
-        };
-      case 'FACILITY_ADMIN':
-        return {
-          title: user?.facilityName || 'Primary Health Center',
-          subtitle: `${user?.district || 'District'}, ${user?.state || 'State'}`,
-        };
-      default:
-        return {
-          title: 'Sanjeevani Grid',
-          subtitle: 'Health Resource Network',
-        };
-    }
+    return { title: user?.scopeMode === 'global' ? 'Global scope' : user?.scopeMode === 'assigned' ? 'Assigned scope' : 'Restricted scope', subtitle: `${user?.facilityIds?.length || 0} assigned facilities / ${user?.districtIds?.length || 0} assigned districts` };
   };
 
   const scope = getScopeLabel();
@@ -186,7 +155,7 @@ export const RoleTopBar: React.FC = () => {
           title="Notifications & Alerts"
         >
           <Bell className="w-4 h-4" />
-          <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-rose-500 ring-2 ring-slate-900" />
+
         </Link>
 
         {/* User Identity Profile Menu */}

@@ -2,6 +2,8 @@ import React from 'react';
 import { createBrowserRouter, Navigate } from 'react-router-dom';
 import { useAuthStore } from '@/store/authStore';
 import { getRoleHomeRoute } from '@/app/roleRoutes';
+import { canAccessPath } from '@/app/authorization';
+import { LoadingScreen } from '@/components/ui/LoadingScreen';
 
 // Layouts
 import { RoleAppShell } from '@/layouts/RoleAppShell';
@@ -49,9 +51,11 @@ import { AdminPage } from '@/modules/admin/AdminPage';
 
 // Root Index Redirector based on session
 const RootRedirect: React.FC = () => {
-  const { isAuthenticated, role } = useAuthStore();
+  const { isAuthenticated, role, user, isRestoring } = useAuthStore();
+  if (isRestoring) return <LoadingScreen message="Verifying session..." />;
   if (isAuthenticated && role) {
-    return <Navigate to={getRoleHomeRoute(role)} replace />;
+    const home = getRoleHomeRoute(role);
+    return <Navigate to={canAccessPath(home, user) ? home : '/profile'} replace />;
   }
   return <Navigate to="/login" replace />;
 };

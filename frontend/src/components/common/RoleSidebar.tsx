@@ -4,6 +4,7 @@ import { useUIStore } from '@/store/uiStore';
 import { useAuthStore } from '@/store/authStore';
 import { NAVIGATION_BY_ROLE } from '@/app/navigationConfig';
 import { ROLE_LABELS } from '@/types/auth';
+import { canAccessPath } from '@/app/authorization';
 import {
   Activity,
   ChevronLeft,
@@ -15,11 +16,13 @@ import {
 export const RoleSidebar: React.FC = () => {
   const { isSidebarCollapsed, toggleSidebar, isMobileSidebarOpen, setMobileSidebarOpen } =
     useUIStore();
-  const { role } = useAuthStore();
+  const { role, user } = useAuthStore();
   const location = useLocation();
 
   const currentRole = role || 'NATIONAL_ADMIN';
-  const navSections = NAVIGATION_BY_ROLE[currentRole] || NAVIGATION_BY_ROLE.NATIONAL_ADMIN;
+  const navSections = (role ? NAVIGATION_BY_ROLE[role] : []).map(section => ({ ...section,
+    items: section.items.filter(item => canAccessPath(item.path, user)),
+  })).filter(section => section.items.length > 0);
 
   return (
     <>

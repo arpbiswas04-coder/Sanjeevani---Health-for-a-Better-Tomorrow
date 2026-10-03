@@ -1,158 +1,42 @@
+import { FacilityActions } from './FacilityActions';
 import React, { useState } from 'react';
-import { MOCK_FACILITIES, FacilityMapItem } from '@/services/mockData';
-import { Card } from '@/components/ui/Card';
-import { Badge } from '@/components/ui/Badge';
-import {
-  Building2,
-  Search,
-  MapPin,
-  Bed,
-  Package,
-  Activity,
-  PhoneCall,
-  ExternalLink,
-} from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { Building2, MapPin } from 'lucide-react';
+import { Card } from '@/components/ui/Card';
+import { useFacilityDirectory } from '@/hooks/useFacilityDirectory';
+import { buttonClass, controlClass, DataState, DetailPanel, PageHeading } from '@/components/common/BackendData';
 
 export const FacilitiesPage: React.FC = () => {
-  const [facilities] = useState<FacilityMapItem[]>(MOCK_FACILITIES);
-  const [search, setSearch] = useState('');
-  const [selectedType, setSelectedType] = useState('All');
-
-  const types = ['All', 'PHC', 'CHC', 'District Hospital', 'Medical College', 'Warehouse'];
-
-  const filtered = facilities.filter((f) => {
-    if (selectedType !== 'All' && f.type !== selectedType) return false;
-    if (
-      search &&
-      !f.name.toLowerCase().includes(search.toLowerCase()) &&
-      !f.district.toLowerCase().includes(search.toLowerCase()) &&
-      !f.state.toLowerCase().includes(search.toLowerCase())
-    ) {
-      return false;
-    }
-    return true;
-  });
-
-  return (
-    <div className="space-y-6 animate-in fade-in duration-300">
-      {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <div className="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-500/10 text-blue-400 border border-blue-500/30">
-            <Building2 className="w-3.5 h-3.5" />
-            <span>Healthcare Infrastructure Directory</span>
-          </div>
-          <h2 className="text-2xl font-bold tracking-tight text-slate-100 mt-1">
-            Facilities, Hospitals & Medical Depots
-          </h2>
-          <p className="text-xs text-slate-400">
-            Directory of connected primary health centers, tertiary care hospitals, and regional warehouses.
-          </p>
-        </div>
-
-        <Link
-          to="/map"
-          className="inline-flex items-center gap-2 px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold rounded-xl border border-slate-700 transition-colors"
-        >
-          <MapPin className="w-4 h-4 text-cyan-400" />
-          <span>Switch to Geospatial Map</span>
-        </Link>
-      </div>
-
-      {/* Filter and Search */}
-      <Card className="p-4 bg-slate-900/90 border-slate-800 flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-3 flex-1 min-w-[260px]">
-          <div className="relative flex-1">
-            <Search className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
-            <input
-              type="text"
-              placeholder="Search facility name, district, or state..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="w-full bg-slate-950/80 border border-slate-700/80 rounded-xl pl-9 pr-4 py-1.5 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-blue-500 transition-colors"
-            />
-          </div>
-
-          <div className="flex items-center gap-1.5">
-            <select
-              value={selectedType}
-              onChange={(e) => setSelectedType(e.target.value)}
-              className="bg-slate-950 border border-slate-700 text-xs text-slate-200 rounded-xl px-2.5 py-1.5 focus:outline-none"
-            >
-              {types.map((t) => (
-                <option key={t} value={t}>
-                  {t}
-                </option>
-              ))}
-            </select>
-          </div>
-        </div>
-
-        <span className="text-xs text-slate-400">
-          Total: <strong className="text-slate-100">{filtered.length}</strong> facilities
-        </span>
-      </Card>
-
-      {/* Facilities Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-        {filtered.map((f) => (
-          <Card key={f.id} className="flex flex-col justify-between space-y-4 hover:border-slate-600 transition-colors">
-            <div>
-              <div className="flex items-start justify-between gap-2 border-b border-slate-800 pb-3">
-                <div className="flex items-start gap-3">
-                  <div className="p-2.5 rounded-xl bg-slate-800/80 text-blue-400 border border-slate-700/60 mt-0.5">
-                    <Building2 className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <h3 className="font-bold text-sm text-slate-100">{f.name}</h3>
-                    <div className="text-xs text-slate-400 flex items-center gap-1.5 mt-0.5">
-                      <MapPin className="w-3 h-3 text-cyan-400" />
-                      <span>{f.district}, {f.state}</span>
-                      <span>•</span>
-                      <span className="text-teal-400 font-mono text-[11px]">{f.type}</span>
-                    </div>
-                  </div>
-                </div>
-                <Badge level={f.risk_level}>{f.risk_level.toUpperCase()}</Badge>
-              </div>
-
-              <div className="grid grid-cols-3 gap-2 text-xs pt-3 font-mono">
-                <div className="p-2 bg-slate-950/70 rounded-xl">
-                  <span className="text-[10px] text-slate-500 block">Medicine Stock</span>
-                  <strong className="text-emerald-400">{f.medicine_availability_pct}%</strong>
-                </div>
-                <div className="p-2 bg-slate-950/70 rounded-xl">
-                  <span className="text-[10px] text-slate-500 block">Bed Occupancy</span>
-                  <strong className="text-cyan-400">{f.bed_occupancy_pct}%</strong>
-                </div>
-                <div className="p-2 bg-slate-950/70 rounded-xl">
-                  <span className="text-[10px] text-slate-500 block">Free ICU Beds</span>
-                  <strong className="text-purple-400">{f.icu_beds_free}</strong>
-                </div>
-              </div>
-
-              <div className="mt-3 flex items-center justify-between text-[11px] text-slate-400">
-                <span>Staff: <strong className="text-slate-200">{f.staff_status}</strong></span>
-                <span>O2 Buffer: <strong className="text-amber-400 font-mono">{f.oxygen_supply_hours} hrs</strong></span>
-              </div>
-            </div>
-
-            <div className="pt-2 border-t border-slate-800/80 flex items-center justify-between text-xs">
-              <span className="text-[11px] font-mono text-slate-500">ID: {f.id}</span>
-              <Link
-                to="/inventory"
-                className="text-emerald-400 hover:text-emerald-300 font-semibold flex items-center gap-1 text-[11px]"
-              >
-                <span>View Stock Ledger</span>
-                <ExternalLink className="w-3 h-3" />
-              </Link>
-            </div>
-          </Card>
-        ))}
-      </div>
-    </div>
-  );
+  const [search, setSearch] = useState(''); const [type, setType] = useState('');
+  const [state, setState] = useState(''); const [district, setDistrict] = useState(''); const [block, setBlock] = useState('');
+  const [active, setActive] = useState(true); const [detail, setDetail] = useState('');
+  const directory = useFacilityDirectory({ active, state_id: state, district_id: district, block_id: block });
+  const query = directory.facilities;
+  const rows = (query.data || []).filter(f => (!type || f.facility_type === type) && `${f.name} ${f.code} ${f.address || ''}`.toLowerCase().includes(search.toLowerCase()));
+  return <div className="space-y-6 animate-in fade-in duration-300">
+    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4"><PageHeading title="Facilities, Hospitals & Medical Depots" description="Healthcare Infrastructure Directory - backend records in your permitted scope." /><Link to="/map" className={buttonClass}><MapPin className="inline w-4 h-4" /> Switch to Geospatial Map</Link></div>
+    <FacilityActions selected={query.data?.find(f=>f.id===detail)}/>
+    <Card className="p-4 flex flex-wrap gap-3 items-center">
+      <input aria-label="Search facilities" placeholder="Search facility name, code, or address..." className={controlClass} value={search} onChange={e => setSearch(e.target.value)} />
+      <select aria-label="Facility type" className={controlClass} value={type} onChange={e => setType(e.target.value)}><option value="">All types</option>{Array.from(new Set(query.data?.map(f => f.facility_type))).map(t => <option key={t}>{t}</option>)}</select>
+      <select aria-label="Facility status" className={controlClass} value={String(active)} onChange={e => { setActive(e.target.value === 'true'); setDetail(''); }}><option value="true">Active</option><option value="false">Inactive</option></select>
+      <select aria-label="State" className={controlClass} value={state} onChange={e => { setState(e.target.value); setDistrict(''); setBlock(''); }}><option value="">All states</option>{directory.states.data?.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}</select>
+      <select aria-label="District" className={controlClass} value={district} onChange={e => { setDistrict(e.target.value); setBlock(''); }}><option value="">All districts</option>{directory.districts.data?.filter(d => !state || d.state_id === state).map(d => <option key={d.id} value={d.id}>{d.name}</option>)}</select>
+      <select aria-label="Block" className={controlClass} value={block} onChange={e => setBlock(e.target.value)}><option value="">All blocks</option>{directory.blocks.data?.filter(b => !district || b.district_id === district).map(b => <option key={b.id} value={b.id}>{b.name}</option>)}</select>
+      <button className={buttonClass} disabled={query.isFetching} onClick={() => query.refetch()}>Refresh facilities</button>
+      {query.data && <span className="text-xs text-slate-400">Total: {rows.length} facilities</span>}
+    </Card>
+    {[directory.countries, directory.states, directory.districts, directory.blocks].map((q, index) => q.error ? <DataState key={index} query={q}>{null}</DataState> : null)}
+    <DataState query={query} empty={rows.length === 0}><div className="grid grid-cols-1 md:grid-cols-2 gap-5">{rows.map(f => {
+      const place = directory.location(f);
+      return <Card key={f.id} className="flex flex-col justify-between space-y-4 hover:border-slate-600">
+        <div className="flex gap-3 border-b border-slate-800 pb-3"><Building2 className="w-5 h-5 text-blue-400" /><div><h3 className="font-bold text-sm text-slate-100">{f.name}</h3><p className="text-xs text-slate-400">{directory.geographyPending ? 'Loading geography...' : directory.geographyUnavailable ? 'Geography unavailable' : [place.block?.name, place.district?.name, place.state?.name, place.country?.name].filter(Boolean).join(', ') || 'Geography not recorded'} / {f.facility_type}</p></div><span className="ml-auto text-xs text-teal-400">{f.active ? 'Active' : 'Inactive'}</span></div>
+        <div className="grid grid-cols-3 gap-2 text-xs"><div>Code<p className="text-slate-200">{f.code}</p></div><div>Contact<p className="text-slate-200">{f.contact || 'Not recorded'}</p></div><div>Coordinates<p className="text-slate-200">{f.latitude !== null && f.longitude !== null ? `${f.latitude}, ${f.longitude}` : 'Not recorded'}</p></div></div>
+        <p className="text-xs text-slate-400">{f.address || 'Address not recorded'}</p>
+        <div className="flex justify-between border-t border-slate-800 pt-3"><button className={buttonClass} onClick={() => setDetail(f.id)}>View {f.name} details</button><Link className={buttonClass} to={`/inventory?facility_id=${encodeURIComponent(f.id)}`}>View Stock Ledger</Link></div>
+      </Card>;
+    })}</div></DataState>
+    {detail && <DetailPanel key={detail} title="Facility details" path={`/facilities/${detail}`} permission="inventory.read" />}
+  </div>;
 };
-
 export default FacilitiesPage;

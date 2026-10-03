@@ -46,6 +46,13 @@ class UserView(Output):
     updated_at: datetime
 
 
+class CurrentUserView(UserView):
+    roles: list[str]
+    permissions: list[str]
+    facility_ids: list[UUID]
+    district_ids: list[UUID]
+
+
 class RoleView(Output):
     name: str
     id: UUID

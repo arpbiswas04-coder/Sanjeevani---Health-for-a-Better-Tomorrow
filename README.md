@@ -79,30 +79,27 @@ Sanjeevani-Grid/
 
 ---
 
-## 6. Docker Startup (Quickstart)
+## 6. Integrated development startup
 
-```bash
-git clone <repo-url>
-cd Sanjeevani-Grid
-cp .env.example .env
-docker compose up --build
-```
+Follow [DEVELOPMENT.md](DEVELOPMENT.md) for the verified PostgreSQL/PostGIS + Redis,
+backend `.venv`, migrations, administrator bootstrap, frontend and worker commands.
+The root Compose file is legacy scaffolding, not the supported integrated quickstart
+or a staging deployment manifest. It lacks the verified PostGIS/auth configuration.
 
-Services will become available at:
-- **Frontend SPA**: [http://localhost:5173](http://localhost:5173)
-- **Backend API Docs (Swagger)**: [http://localhost:8000/api/v1/docs](http://localhost:8000/api/v1/docs)
-- **Backend Health Check**: [http://localhost:8000/api/v1/health](http://localhost:8000/api/v1/health)
+The architecture above describes the broader project direction. Current supported
+frontend workflows and explicit unsupported capabilities are recorded in
+[FINAL_READINESS_AUDIT.md](FINAL_READINESS_AUDIT.md) and the Phase 1?4 reports.
 
 ---
 
 ## 7. Local Standalone Setup
 
-If developing without Docker:
+For the complete integrated setup use [DEVELOPMENT.md](DEVELOPMENT.md). The commands below are component-only references; database configuration and migrations are still required.
 
 ### Frontend
 ```bash
 cd frontend
-npm install
+npm ci
 npm run dev
 ```
 
@@ -115,8 +112,9 @@ source .venv/bin/activate
 # Windows PowerShell:
 .venv\Scripts\Activate.ps1
 
-pip install -r requirements.txt
-uvicorn app.main:app --reload --port 8000
+python -c "import sys; from pathlib import Path; assert sys.prefix != sys.base_prefix and Path(sys.prefix).resolve() == Path('.venv').resolve()"
+python -m pip install -r requirements.txt
+python -m uvicorn app.main:app --reload --port 8000
 ```
 
 ---

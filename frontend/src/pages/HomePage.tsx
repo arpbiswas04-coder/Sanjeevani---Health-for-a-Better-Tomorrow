@@ -1,3 +1,4 @@
+// LEGACY DEMONSTRATION ONLY: not mounted by the current application router.
 import React, { useState } from 'react';
 import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';

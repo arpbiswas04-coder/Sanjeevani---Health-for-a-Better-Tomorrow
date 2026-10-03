@@ -1,238 +1,81 @@
-import { LoginRequest, AuthResponse, User, Role, Permission } from '@/types/auth';
+import { AuthResponse, LoginRequest, Permission, Role } from '@/types/auth';
+import { apiRequest, publicRequest, readSession, saveTokens, clearSession, TokenPair } from './httpClient';
 
-const BASE_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000';
-const STORAGE_KEY = 'sanjeevani_auth_session';
-
-// Standard provisioned accounts representing the 5 authoritative role tiers
-export const DEMO_ACCOUNTS: Record<Role, { email: string; pass: string; user: User }> = {
-  SUPER_ADMIN: {
-    email: 'admin.system@sanjeevani.gov.in',
-    pass: 'SuperSecure2026!',
-    user: {
-      id: 'USR-SUPER-01',
-      name: 'Vikramaditya Sharma',
-      email: 'admin.system@sanjeevani.gov.in',
-      role: 'SUPER_ADMIN',
-      designation: 'Principal System Architect & Administrator',
-      permissions: [
-        'dashboard:view',
-        'facility:view',
-        'inventory:view',
-        'inventory:update',
-        'beds:view',
-        'beds:update',
-        'workforce:view',
-        'analytics:view',
-        'alerts:view',
-        'emergency:view',
-        'emergency:override',
-        'federated:manage',
-        'users:manage',
-        'roles:manage',
-        'system:config',
-      ],
-    },
-  },
-  NATIONAL_ADMIN: {
-    email: 'national.command@sanjeevani.gov.in',
-    pass: 'NationalPass2026!',
-    user: {
-      id: 'USR-NAT-01',
-      name: 'Dr. Aarav Patel',
-      email: 'national.command@sanjeevani.gov.in',
-      role: 'NATIONAL_ADMIN',
-      designation: 'National Director, Health Surveillance Command',
-      permissions: [
-        'dashboard:view',
-        'facility:view',
-        'inventory:view',
-        'inventory:update',
-        'beds:view',
-        'beds:update',
-        'workforce:view',
-        'analytics:view',
-        'alerts:view',
-        'emergency:view',
-        'emergency:override',
-        'federated:manage',
-      ],
-    },
-  },
-  STATE_ADMIN: {
-    email: 'state.up@sanjeevani.gov.in',
-    pass: 'StatePass2026!',
-    user: {
-      id: 'USR-ST-UP-01',
-      name: 'Dr. Sunita Rao',
-      email: 'state.up@sanjeevani.gov.in',
-      role: 'STATE_ADMIN',
-      state: 'Uttar Pradesh',
-      designation: 'State Health Commissioner, Uttar Pradesh',
-      permissions: [
-        'dashboard:view',
-        'facility:view',
-        'inventory:view',
-        'inventory:update',
-        'beds:view',
-        'beds:update',
-        'workforce:view',
-        'analytics:view',
-        'alerts:view',
-        'emergency:view',
-      ],
-    },
-  },
-  DISTRICT_ADMIN: {
-    email: 'district.lucknow@sanjeevani.gov.in',
-    pass: 'DistrictPass2026!',
-    user: {
-      id: 'USR-DIST-LKO-01',
-      name: 'Rajesh K. Verma, IAS',
-      email: 'district.lucknow@sanjeevani.gov.in',
-      role: 'DISTRICT_ADMIN',
-      state: 'Uttar Pradesh',
-      district: 'Lucknow',
-      designation: 'District Magistrate & Chief Health Officer, Lucknow',
-      permissions: [
-        'dashboard:view',
-        'facility:view',
-        'inventory:view',
-        'inventory:update',
-        'beds:view',
-        'workforce:view',
-        'analytics:view',
-        'alerts:view',
-        'emergency:view',
-      ],
-    },
-  },
-  FACILITY_ADMIN: {
-    email: 'facility.rml@sanjeevani.gov.in',
-    pass: 'FacilityPass2026!',
-    user: {
-      id: 'USR-FAC-RML-01',
-      name: 'Dr. Ananya Sen',
-      email: 'facility.rml@sanjeevani.gov.in',
-      role: 'FACILITY_ADMIN',
-      state: 'Uttar Pradesh',
-      district: 'Lucknow',
-      facilityId: 'fac-002',
-      facilityName: 'Dr. RML Hospital, Lucknow',
-      designation: 'Medical Superintendent, Dr. RML Hospital',
-      permissions: [
-        'dashboard:view',
-        'facility:view',
-        'inventory:view',
-        'inventory:update',
-        'beds:view',
-        'beds:update',
-        'workforce:view',
-        'alerts:view',
-      ],
-    },
-  },
+// Presentation aliases only. A mapped role NEVER supplies permissions.
+export const BACKEND_ROLES: Record<string, Role> = {
+  administrator: 'SUPER_ADMIN', admin: 'SUPER_ADMIN', super_admin: 'SUPER_ADMIN',
+  national_admin: 'NATIONAL_ADMIN', national_officer: 'NATIONAL_ADMIN',
+  state_admin: 'STATE_ADMIN', state_officer: 'STATE_ADMIN',
+  district_admin: 'DISTRICT_ADMIN', district_officer: 'DISTRICT_ADMIN', facility_admin: 'FACILITY_ADMIN',
 };
-
+const CAPABILITIES: Partial<Record<Permission, string>> = {
+  'dashboard:view': 'reports.read', 'inventory:view': 'inventory.read', 'inventory:update': 'inventory.write',
+  'beds:view': 'beds.read', 'beds:update': 'beds.write', 'workforce:view': 'workforce.read',
+  'analytics:view': 'reports.read', 'alerts:view': 'alerts.read', 'emergency:view': 'emergency.activate',
+  'emergency:override': 'emergency.activate', 'federated:manage': 'federation.manage',
+  'users:manage': 'admin.users', 'roles:manage': 'admin.users', 'system:config': 'admin.config',
+  'facility:view': 'facility.manage',
+};
+export interface BackendUser {
+  id: string; username: string; active: boolean; scope_mode: string;
+  roles: string[]; permissions: string[]; facility_ids: string[]; district_ids: string[];
+}
+let revision = 0;
+let restoring: Promise<AuthResponse | null> | null = null;
+async function currentIdentity(selectedRole?: Role): Promise<AuthResponse> {
+  const { data: profile } = await apiRequest<{ data: BackendUser }>('/api/v1/users/me');
+  if (!profile.active || !Array.isArray(profile.roles) || !Array.isArray(profile.permissions))
+    throw new Error('The backend returned an invalid user profile.');
+  const roles = profile.roles.map(name => Object.prototype.hasOwnProperty.call(BACKEND_ROLES, name.toLowerCase())
+    ? BACKEND_ROLES[name.toLowerCase()] : undefined).filter((role): role is Role => !!role);
+  const role = selectedRole || roles[0];
+  if (!role || !roles.includes(role)) throw new Error('Your account is not assigned to this portal role. Contact your administrator.');
+  const permissions = (Object.keys(CAPABILITIES) as Permission[]).filter(key => profile.permissions.includes(CAPABILITIES[key]!));
+  const session = readSession();
+  if (!session) throw new Error('Session ended. Please sign in again.');
+  return {
+    user: { id: profile.id, name: profile.username, email: profile.username.includes('@') ? profile.username : '',
+      role, permissions, backendRoles: profile.roles, backendPermissions: profile.permissions, scopeMode: profile.scope_mode,
+      facilityIds: profile.facility_ids, districtIds: profile.district_ids,
+      facilityId: profile.facility_ids.length === 1 ? profile.facility_ids[0] : undefined },
+    role, permissions, accessToken: session.accessToken, expiresIn: Math.max(0, (session.expiresAt - Date.now()) / 1000),
+  };
+}
 export const authService = {
-  /**
-   * Login with email, password, and selected role.
-   * Authoritative role check: user.role must match selected role.
-   */
-  async login(request: LoginRequest): Promise<AuthResponse> {
-    const { email, password, role: selectedRole } = request;
-
-    // First attempt to call backend auth endpoint if available
+  async login(credentials: LoginRequest): Promise<AuthResponse> {
+    const attempt = ++revision;
+    clearSession();
     try {
-      const response = await fetch(`${BASE_URL}/api/v1/auth/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password, role: selectedRole }),
+      const body = new URLSearchParams({ username: credentials.email.trim(), password: credentials.password, grant_type: 'password' });
+      if (credentials.mfaProof) body.set('mfa_proof', credentials.mfaProof);
+      const tokens = await publicRequest<TokenPair>('/api/v1/auth/login', {
+        method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body,
       });
-
-      if (response.ok) {
-        const data: AuthResponse = await response.json();
-        // Server validation check
-        if (data.user.role !== selectedRole) {
-          throw new Error('The selected role does not match this account.');
-        }
-        this.storeSession(data);
-        return data;
-      }
-    } catch (err: unknown) {
-      // If error is our own role mismatch error, propagate it!
-      if (err instanceof Error && err.message === 'The selected role does not match this account.') {
-        throw err;
-      }
-      // Otherwise proceed to fallback demo credential verification
-    }
-
-    // Fallback credential lookup across authoritative accounts
-    const accountEntry = Object.values(DEMO_ACCOUNTS).find(
-      (acc) => acc.email.toLowerCase() === email.trim().toLowerCase()
-    );
-
-    if (!accountEntry) {
-      throw new Error('Invalid credentials. Please verify your credentials or select a demo account below.');
-    }
-
-    // Validate selected role against authoritative account role first if account found
-    if (accountEntry.user.role !== selectedRole) {
-      throw new Error('The selected role does not match this account.');
-    }
-
-    // Verify password
-    if (accountEntry.pass !== password) {
-      throw new Error('Invalid credentials. Please verify your credentials or select a demo account below.');
-    }
-
-    // Build authoritative auth response
-    const authResponse: AuthResponse = {
-      user: accountEntry.user,
-      role: accountEntry.user.role,
-      permissions: accountEntry.user.permissions,
-      accessToken: `sg_jwt_${accountEntry.user.role.toLowerCase()}_${Date.now()}`,
-      expiresIn: 86400,
-    };
-
-    this.storeSession(authResponse);
-    return authResponse;
+      if (attempt !== revision) throw new Error('Sign-in cancelled.');
+      saveTokens(tokens, credentials.rememberMe === true);
+      const identity = await currentIdentity(credentials.role);
+      if (attempt !== revision) throw new Error('Sign-in cancelled.');
+      return identity;
+    } catch (error) { if (attempt === revision) clearSession(); throw error; }
   },
-
+  async restoreSession(): Promise<AuthResponse | null> {
+    if (restoring) return restoring;
+    if (!readSession()) { clearSession(); return null; }
+    const attempt = revision;
+    restoring = currentIdentity().then(identity => attempt === revision ? identity : null)
+      .catch(error => { if (attempt === revision) clearSession(); throw error; })
+      .finally(() => { restoring = null; });
+    return restoring;
+  },
   async logout(): Promise<void> {
-    try {
-      await fetch(`${BASE_URL}/api/v1/auth/logout`, {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${this.getStoredSession()?.accessToken || ''}`,
-        },
-      });
-    } catch {
-      // Ignore network errors on logout
-    } finally {
-      this.clearStoredSession();
-    }
+    revision++;
+    try { if (readSession()) await apiRequest('/api/v1/auth/logout', { method: 'POST' }); }
+    finally { clearSession(); }
   },
-
-  storeSession(session: AuthResponse): void {
-    if (typeof window !== 'undefined') {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(session));
-    }
+  async requestPasswordReset(username: string): Promise<void> {
+    await publicRequest('/api/v1/auth/password/reset/request', { method: 'POST',
+      headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username }) });
   },
-
-  getStoredSession(): AuthResponse | null {
-    if (typeof window === 'undefined') return null;
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (!raw) return null;
-      return JSON.parse(raw) as AuthResponse;
-    } catch {
-      return null;
-    }
-  },
-
-  clearStoredSession(): void {
-    if (typeof window !== 'undefined') {
-      localStorage.removeItem(STORAGE_KEY);
-    }
-  },
+  getStoredSession: readSession,
+  clearStoredSession: clearSession,
 };

@@ -4,7 +4,7 @@ import { useAuthStore } from '@/store/authStore';
 import { useToast } from '@/hooks/useToast';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Role, ROLE_LABELS } from '@/types/auth';
-import { DEMO_ACCOUNTS } from '@/services/authService';
+import { authService } from '@/services/authService';
 import {
   Activity,
   ShieldCheck,
@@ -21,11 +21,12 @@ import {
 } from 'lucide-react';
 
 export const LoginPage: React.FC = () => {
-  const [email, setEmail] = useState('national.command@sanjeevani.gov.in');
-  const [password, setPassword] = useState('NationalPass2026!');
-  const [selectedRole, setSelectedRole] = useState<Role | ''>('NATIONAL_ADMIN');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [mfaProof, setMfaProof] = useState('');
+  const [selectedRole, setSelectedRole] = useState<Role | ''>('');
   const [showPassword, setShowPassword] = useState(false);
-  const [rememberMe, setRememberMe] = useState(true);
+  const [rememberMe, setRememberMe] = useState(false);
   const [isForgotModalOpen, setIsForgotModalOpen] = useState(false);
   const [forgotEmail, setForgotEmail] = useState('');
   const [forgotSubmitted, setForgotSubmitted] = useState(false);
@@ -35,35 +36,22 @@ export const LoginPage: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const handleSelectDemoPreset = (roleKey: Role) => {
-    const demo = DEMO_ACCOUNTS[roleKey];
-    setSelectedRole(roleKey);
-    setEmail(demo.email);
-    setPassword(demo.pass);
-    clearError();
-    toast.info('Role Preset Applied', `Loaded credentials for ${ROLE_LABELS[roleKey]}`);
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     clearError();
-
-    if (!selectedRole) {
-      toast.warning('Role Selection Required', 'Please select your authorized role before logging in.');
-      return;
-    }
 
     try {
       const redirectRoute = await login({
         email,
         password,
-        role: selectedRole,
+        mfaProof: mfaProof || undefined,
+        role: selectedRole || undefined,
         rememberMe,
       });
 
       toast.success(
         'Authentication Successful',
-        `Welcome to Sanjeevani Grid. Initializing ${ROLE_LABELS[selectedRole]} session.`
+        'Your identity and permissions were verified by the backend.'
       );
 
       // Check if there was an attempted URL redirected from
@@ -76,14 +64,15 @@ export const LoginPage: React.FC = () => {
     }
   };
 
-  const handleForgotPasswordSubmit = (e: React.FormEvent) => {
+  const handleForgotPasswordSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!forgotEmail) return;
-    setForgotSubmitted(true);
-    toast.info(
-      'Recovery Dispatched',
-      'If your account is registered with the Health Mesh, instructions have been sent.'
-    );
+    try {
+      await authService.requestPasswordReset(forgotEmail.trim());
+      setForgotSubmitted(true);
+    } catch (error) {
+      toast.error('Recovery unavailable', error instanceof Error ? error.message : 'Please try again later.');
+    }
   };
 
   return (
@@ -100,35 +89,6 @@ export const LoginPage: React.FC = () => {
           <p className="text-xs sm:text-sm text-slate-400 max-w-sm mx-auto">
             Federated AI-Powered Smart Health & Supply Chain Resilience Platform
           </p>
-        </div>
-
-        {/* Quick Testing Role Presets Picker */}
-        <div className="p-3.5 bg-slate-900/80 border border-slate-800 rounded-2xl space-y-2">
-          <div className="flex items-center justify-between px-1">
-            <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider flex items-center gap-1.5">
-              <Sparkles className="w-3.5 h-3.5 text-teal-400" />
-              Fast Role Demo Presets
-            </span>
-            <span className="text-[10px] text-slate-500 font-mono">1-Click Autofill</span>
-          </div>
-
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5">
-            {(Object.keys(ROLE_LABELS) as Role[]).map((rKey) => (
-              <button
-                key={rKey}
-                type="button"
-                onClick={() => handleSelectDemoPreset(rKey)}
-                className={`p-2 rounded-xl text-left border text-[11px] transition-all ${
-                  selectedRole === rKey
-                    ? 'bg-emerald-500/15 border-emerald-500/40 text-emerald-300 font-semibold shadow-sm'
-                    : 'bg-slate-950/60 border-slate-800 text-slate-400 hover:text-slate-200 hover:bg-slate-800/40'
-                }`}
-              >
-                <div className="font-bold truncate">{ROLE_LABELS[rKey]}</div>
-                <div className="text-[9px] font-mono text-slate-500">{rKey}</div>
-              </button>
-            ))}
-          </div>
         </div>
 
         {/* Main Login Card */}
@@ -159,7 +119,7 @@ export const LoginPage: React.FC = () => {
                 htmlFor="role-select"
                 className="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-1.5"
               >
-                Role <span className="text-rose-400">*</span>
+                Portal role (optional)
               </label>
               <div className="relative">
                 <select
@@ -170,11 +130,10 @@ export const LoginPage: React.FC = () => {
                     setSelectedRole(e.target.value as Role);
                     clearError();
                   }}
-                  required
                   className="w-full bg-slate-950 border border-slate-700/80 rounded-xl px-3.5 py-2.5 text-xs text-slate-100 font-medium focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-colors"
                 >
-                  <option value="" disabled>
-                    -- Select your role ▼ --
+                  <option value="">
+                    Use my assigned role
                   </option>
                   {(Object.keys(ROLE_LABELS) as Role[]).map((rKey) => (
                     <option key={rKey} value={rKey}>
@@ -198,7 +157,7 @@ export const LoginPage: React.FC = () => {
                 <input
                   id="email-input"
                   aria-label="Official Email / Username"
-                  type="email"
+                  type="text" autoComplete="username"
                   required
                   placeholder="officer@sanjeevani.gov.in"
                   value={email}
@@ -233,7 +192,7 @@ export const LoginPage: React.FC = () => {
                 <input
                   id="password-input"
                   aria-label="Passcode / Password"
-                  type={showPassword ? 'text' : 'password'}
+                  type={showPassword ? 'text' : 'password'} autoComplete="current-password"
                   required
                   placeholder="••••••••••••"
                   value={password}
@@ -255,6 +214,12 @@ export const LoginPage: React.FC = () => {
             </div>
 
             {/* Remember Me Checkbox */}
+            <div>
+              <label htmlFor="mfa-proof" className="block text-xs text-slate-300 mb-1">MFA proof (if required)</label>
+              <input id="mfa-proof" type="text" autoComplete="one-time-code" value={mfaProof}
+                onChange={event => setMfaProof(event.target.value)}
+                className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-100" />
+            </div>
             <div className="flex items-center gap-2 pt-1">
               <input
                 id="remember-me"
@@ -292,7 +257,7 @@ export const LoginPage: React.FC = () => {
           {/* Security Assurance Footer */}
           <div className="border-t border-slate-800/80 pt-4 flex items-center justify-center gap-2 text-[11px] text-slate-500">
             <ShieldCheck className="w-4 h-4 text-emerald-400/80" />
-            <span>Role-Based Zero-Trust Authorization • TLS 1.3 Encrypted</span>
+            <span>Backend-verified identity and permissions</span>
           </div>
         </Card>
       </div>
@@ -327,7 +292,7 @@ export const LoginPage: React.FC = () => {
                     Official Email
                   </label>
                   <input
-                    type="email"
+                    type="text" autoComplete="username"
                     required
                     placeholder="officer@sanjeevani.gov.in"
                     value={forgotEmail}
@@ -354,9 +319,9 @@ export const LoginPage: React.FC = () => {
             ) : (
               <div className="space-y-3 text-center py-2 text-xs">
                 <CheckCircle2 className="w-8 h-8 text-emerald-400 mx-auto" />
-                <h4 className="font-bold text-slate-100">Recovery Instructions Sent</h4>
+                <h4 className="font-bold text-slate-100">Recovery Request Accepted</h4>
                 <p className="text-slate-400 text-[11px]">
-                  Please verify your government inbox or contact your State Surveillance Directorate for cryptographic key reset.
+                  If the account is eligible and delivery is configured, recovery instructions will be delivered. Otherwise contact your administrator.
                 </p>
                 <button
                   onClick={() => setIsForgotModalOpen(false)}

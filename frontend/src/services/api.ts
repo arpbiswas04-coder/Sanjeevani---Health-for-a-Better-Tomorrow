@@ -1,11 +1,8 @@
 import { HealthStatus } from '@/types';
 
-const BASE_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000';
+import { publicRequest } from './httpClient';
+export { apiRequest } from './httpClient';
 
 export async function fetchHealth(): Promise<HealthStatus> {
-  const response = await fetch(`${BASE_URL}/api/v1/health`);
-  if (!response.ok) {
-    throw new Error(`Health check failed with status: ${response.status}`);
-  }
-  return response.json();
+  return publicRequest<HealthStatus>('/api/v1/health');
 }

@@ -1,3 +1,5 @@
+> Current status: see [Phase 5 readiness audit](../FINAL_READINESS_AUDIT.md) and [supported setup](../DEVELOPMENT.md). This report retains historical phase results. Phase 5 adds optional report-job idempotency (`ReportJobRequest`), real Celery worker/Beat verification, and explicit production API configuration. Earlier statements about those gaps are superseded.
+
 # Infrastructure verification (not executed here)
 
 Docker is not installed in the current execution environment. Local ports 5432

@@ -1,38 +1,15 @@
 import React from 'react';
-import { Navigate, Outlet } from 'react-router-dom';
-import { useUIStore, UserRole } from '@/store/uiStore';
-import { ShieldAlert } from 'lucide-react';
+import { RoleGuard } from './RoleGuard';
+import { UserRole } from '@/store/uiStore';
+import { Role } from '@/types/auth';
 
-interface ProtectedRouteProps {
-  allowedRoles?: UserRole[];
-  redirectPath?: string;
-}
-
-export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
-  allowedRoles,
-  redirectPath = '/login',
-}) => {
-  // Mock auth state until Member 2 endpoints arrive; default to authenticated
-  const isAuthenticated = true;
-  const { activeRole } = useUIStore();
-
-  if (!isAuthenticated) {
-    return <Navigate to={redirectPath} replace />;
-  }
-
-  if (allowedRoles && !allowedRoles.includes(activeRole)) {
-    return (
-      <div className="min-h-[50vh] flex flex-col items-center justify-center p-6 text-center">
-        <div className="p-3 bg-amber-500/10 border border-amber-500/20 rounded-xl text-amber-400 mb-3">
-          <ShieldAlert className="w-8 h-8" />
-        </div>
-        <h3 className="text-base font-bold text-slate-100">Access Restricted</h3>
-        <p className="mt-1 text-xs text-slate-400 max-w-sm">
-          Your current simulated role (<span className="font-semibold text-slate-200">{activeRole}</span>) does not have authorization for this command view.
-        </p>
-      </div>
-    );
-  }
-
-  return <Outlet />;
+const LEGACY_ROLES: Partial<Record<UserRole, Role>> = {
+  national_officer: 'NATIONAL_ADMIN', state_officer: 'STATE_ADMIN',
+  district_officer: 'DISTRICT_ADMIN', facility_admin: 'FACILITY_ADMIN',
+};
+export const ProtectedRoute: React.FC<{ allowedRoles?: UserRole[]; redirectPath?: string }> = ({ allowedRoles }) => {
+  // Legacy callers use the same verified session; simulated UI roles are never credentials.
+  const mapped = allowedRoles?.map(role => LEGACY_ROLES[role]).filter((role): role is Role => !!role);
+  if (allowedRoles?.length && !mapped?.length) return <div role="alert">Access Restricted</div>;
+  return <RoleGuard allowedRoles={mapped} />;
 };
