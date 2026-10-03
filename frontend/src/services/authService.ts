@@ -7,6 +7,8 @@ export const BACKEND_ROLES: Record<string, Role> = {
   national_admin: 'NATIONAL_ADMIN', national_officer: 'NATIONAL_ADMIN',
   state_admin: 'STATE_ADMIN', state_officer: 'STATE_ADMIN',
   district_admin: 'DISTRICT_ADMIN', district_officer: 'DISTRICT_ADMIN', facility_admin: 'FACILITY_ADMIN',
+  // Real development DB roles: aliases select a portal, never supply capabilities.
+  dev_data_operator: 'FACILITY_ADMIN', dev_data_inventory: 'FACILITY_ADMIN', dev_data_reader: 'FACILITY_ADMIN',
 };
 const CAPABILITIES: Partial<Record<Permission, string>> = {
   'dashboard:view': 'reports.read', 'inventory:view': 'inventory.read', 'inventory:update': 'inventory.write',

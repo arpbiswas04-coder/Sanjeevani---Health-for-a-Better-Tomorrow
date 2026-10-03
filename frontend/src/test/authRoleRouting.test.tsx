@@ -45,6 +45,14 @@ function mockLogin(user = profile) {
 }
 
 describe('backend authentication contract', () => {
+  it.each(['dev_data_operator', 'dev_data_inventory', 'dev_data_reader'])('maps %s without inventing grants', async role => {
+    mockLogin({ ...profile, roles: [role], permissions: ['inventory.read'], scope_mode: 'restricted', facility_ids: ['source-facility'] });
+    const identity = await authService.login(credentials);
+    expect(identity.role).toBe('FACILITY_ADMIN');
+    expect(identity.user.backendPermissions).toEqual(['inventory.read']);
+    expect(identity.user.facilityIds).toEqual(['source-facility']);
+    expect(identity.permissions).toEqual(['inventory:view']);
+  });
   it('sends form credentials and loads identity and grants with the real access token', async () => {
     mockLogin();
     expect(await useAuthStore.getState().login(credentials)).toBe('/admin/dashboard');
