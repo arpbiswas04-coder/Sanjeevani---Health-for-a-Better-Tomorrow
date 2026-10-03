@@ -8,7 +8,7 @@ from datetime import date, datetime
 from decimal import Decimal
 from uuid import UUID
 from typing import Any, Generic, Literal, TypeVar
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 from app.schemas.response import ErrorDetail
 from app.integrations.fhir import Location
 from app.integrations.weather import CurrentWeather
@@ -67,7 +67,21 @@ class PermissionView(Output):
     updated_at: datetime
 
 
+class ApproximateLocation(Output):
+    precision: Literal['approximate_city']
+    city: str
+    state: str
+    latitude: float = Field(ge=-90,le=90,allow_inf_nan=False)
+    longitude: float = Field(ge=-180,le=180,allow_inf_nan=False)
+    reference_id: str
+    source_url: str
+    dataset_sha256: str
+    retrieved_on: date
+    attribution: str
+
+
 class FacilityView(Output):
+    location_context: ApproximateLocation | None = None
     facility_type: str
     address: str | None
     block_id: UUID | None

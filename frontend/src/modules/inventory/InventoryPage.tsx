@@ -19,6 +19,7 @@ export const InventoryPage: React.FC = () => {
   const [tab, setTab] = useState(location.pathname.endsWith('/expiry') ? 'expiry' : 'medicines'); const [search, setSearch] = useState('');
   const [medicine, setMedicine] = useState(''); const [batch, setBatch] = useState('');
   const [barcode, setBarcode] = useState(''); const [lookup, setLookup] = useState('');
+  React.useEffect(() => { setTab(location.pathname.endsWith('/expiry') ? 'expiry' : 'medicines'); setBatch(''); }, [location.pathname]);
   const catalogue = useBackendData<MedicineView[]>('/medicines', {}, 'inventory.read', true, true);
   const stock = useBackendData<InventoryWithBatch[]>('/inventory', { facility_id: facilityId }, 'inventory.read', !!facilityId, true);
   const expiry = useBackendData<Expiry[]>('/inventory/expiry', { facility_id: facilityId }, 'inventory.read', !!facilityId && tab === 'expiry', true);

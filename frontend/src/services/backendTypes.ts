@@ -1,5 +1,10 @@
 // Response types transcribed from the actual FastAPI OpenAPI schema. No UI-only telemetry fields.
 export interface FacilityView {
+  location_context?: {
+    precision: 'approximate_city'; city: string; state: string;
+    latitude: number; longitude: number; reference_id: string; source_url: string;
+    dataset_sha256: string; retrieved_on: string; attribution: string;
+  } | null;
   facility_type: string;
   address: string | null;
   block_id: string | null;

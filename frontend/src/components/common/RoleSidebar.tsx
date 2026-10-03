@@ -147,9 +147,9 @@ export const RoleSidebar: React.FC = () => {
               <div className="flex items-center gap-2">
                 <ShieldCheck className="w-4 h-4 text-emerald-400" />
                 <div className="flex flex-col">
-                  <span className="text-[10px] text-slate-400">Security Clearance</span>
+                  <span className="text-[10px] text-slate-400">Backend role</span>
                   <span className="text-xs font-bold text-slate-100 font-mono">
-                    Tier: {currentRole}
+                    {user?.backendRoles?.join(', ') || 'Not recorded'}
                   </span>
                 </div>
               </div>

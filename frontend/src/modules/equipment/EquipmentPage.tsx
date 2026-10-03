@@ -7,6 +7,7 @@ import { PageHeading, DataPanel, Unavailable, buttonClass } from '@/components/c
 export const EquipmentPage: React.FC = () => {
  const location = useLocation();
  const [facility,setFacility]=useFacilitySelection(); const [tab,setTab]=useState(location.pathname.endsWith('/ambulance') ? 'ambulances' : 'equipment'); const [equipment,setEquipment]=useState(''); const [selected,setSelected]=useState<any>(null);
+ React.useEffect(()=>{setTab(location.pathname.endsWith('/ambulance')?'ambulances':'equipment');setEquipment('');setSelected(null);},[location.pathname]);
  return <div className="space-y-6"><PageHeading title="Biomedical Equipment & Ambulance Fleet Telemetry" description="Recorded equipment status, maintenance dates and ambulance availability."/><Card><FacilityPicker value={facility} onChange={id=>{setFacility(id);setEquipment('');setSelected(null);}}/></Card>
  <div className="flex gap-2">{['equipment','ambulances'].map(t=><button key={t} className={buttonClass} aria-pressed={tab===t} onClick={()=>{setTab(t);setEquipment('');setSelected(null);}}>{t==='equipment'?'Biomedical Equipment':'Ambulance Fleet'}</button>)}</div>
  <OperationsActions key={`actions-${facility}-${tab}`} kind={tab} facility={facility} selected={selected}/>

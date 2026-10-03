@@ -1,0 +1,102 @@
+{
+  "source": "GeoNames cities15000 populated-place points (not hospital locations or computed centroids)",
+  "source_url": "https://download.geonames.org/export/dump/cities15000.zip",
+  "license": "CC BY 4.0",
+  "license_url": "https://creativecommons.org/licenses/by/4.0/",
+  "retrieved_on": "2026-10-03",
+  "dataset_sha256": "c2fc384e708978317413a86d36886f226a1203dcbf54796416443691f8bba897",
+  "admin1_sha256": "1da92a6323a5fec3176f3f743bf4cf4040fd56a876da55e46fbca23c863aa60a",
+  "selection": "Country IN; exact ASCII city names in the ten-entry reviewed allowlist; state from admin1CodesASCII. No alias or PIN inference.",
+  "cities": [
+    {
+      "city": "Anand",
+      "state": "Gujarat",
+      "latitude": 22.55251,
+      "longitude": 72.9552,
+      "reference_id": "1278685",
+      "source_url": "https://www.geonames.org/1278685/",
+      "source_modified": "2025-01-03"
+    },
+    {
+      "city": "Bengaluru",
+      "state": "Karnataka",
+      "latitude": 12.97194,
+      "longitude": 77.59369,
+      "reference_id": "1277333",
+      "source_url": "https://www.geonames.org/1277333/",
+      "source_modified": "2025-05-24"
+    },
+    {
+      "city": "Chennai",
+      "state": "Tamil Nadu",
+      "latitude": 13.08784,
+      "longitude": 80.27847,
+      "reference_id": "1264527",
+      "source_url": "https://www.geonames.org/1264527/",
+      "source_modified": "2024-09-05"
+    },
+    {
+      "city": "Coimbatore",
+      "state": "Tamil Nadu",
+      "latitude": 11.00555,
+      "longitude": 76.96612,
+      "reference_id": "1273865",
+      "source_url": "https://www.geonames.org/1273865/",
+      "source_modified": "2024-01-06"
+    },
+    {
+      "city": "Ghaziabad",
+      "state": "Uttar Pradesh",
+      "latitude": 28.66535,
+      "longitude": 77.43915,
+      "reference_id": "1271308",
+      "source_url": "https://www.geonames.org/1271308/",
+      "source_modified": "2026-04-29"
+    },
+    {
+      "city": "Kolkata",
+      "state": "West Bengal",
+      "latitude": 22.56263,
+      "longitude": 88.36304,
+      "reference_id": "1275004",
+      "source_url": "https://www.geonames.org/1275004/",
+      "source_modified": "2024-05-27"
+    },
+    {
+      "city": "Mumbai",
+      "state": "Maharashtra",
+      "latitude": 19.07283,
+      "longitude": 72.88261,
+      "reference_id": "1275339",
+      "source_url": "https://www.geonames.org/1275339/",
+      "source_modified": "2024-09-05"
+    },
+    {
+      "city": "Nagpur",
+      "state": "Maharashtra",
+      "latitude": 21.14631,
+      "longitude": 79.08491,
+      "reference_id": "1262180",
+      "source_url": "https://www.geonames.org/1262180/",
+      "source_modified": "2025-05-25"
+    },
+    {
+      "city": "New Delhi",
+      "state": "Delhi",
+      "latitude": 28.62137,
+      "longitude": 77.2148,
+      "reference_id": "1261481",
+      "source_url": "https://www.geonames.org/1261481/",
+      "source_modified": "2025-07-22"
+    },
+    {
+      "city": "Pune",
+      "state": "Maharashtra",
+      "latitude": 18.51957,
+      "longitude": 73.85535,
+      "reference_id": "1259229",
+      "source_url": "https://www.geonames.org/1259229/",
+      "source_modified": "2025-02-26"
+    }
+  ]
+}

@@ -214,6 +214,9 @@ def parser():
     q.add_argument('--facility-id',action='append',default=[])
     q=sub.add_parser('operations');q.add_argument('--seed',type=int,required=True)
     q.add_argument('--facilities',type=int,default=3);q.add_argument('--medicines',type=int,default=8)
+    q=sub.add_parser('enrich');q.add_argument('--seed',type=int,required=True)
+    q=sub.add_parser('accounts');q.add_argument('--seed',type=int,required=True)
+    q.add_argument('--credentials-file',type=Path)
     return p
 
 
@@ -230,6 +233,14 @@ async def main(args):
                 names=MEDICINES if args.command=='medicines' else (FACILITIES,)
                 result=await import_catalogue(AsyncSessionLocal,args.command,[args.source_dir/n for n in names],
                     None if args.full else (args.limit if args.limit is not None else (200 if args.command=='medicines' else 50)),args.batch_size)
+            elif args.command=='accounts':
+                from scripts.development_accounts import accounts
+                result=await accounts(args)
+            elif args.command=='enrich':
+                from scripts.development_enrichment import enrich
+                async with AsyncSessionLocal.begin() as db:
+                    await guard(db)
+                    result=await enrich(db,await actor(db),args.seed)
             else:
                 from scripts.development_seed import users,operations
                 result=await (users(args) if args.command=='users' else operations(args))

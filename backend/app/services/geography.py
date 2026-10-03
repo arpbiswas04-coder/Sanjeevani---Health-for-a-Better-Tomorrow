@@ -73,7 +73,9 @@ async def list_facilities(db, user, offset=0, limit=50, search=None, block_id=No
             query = query.where(State.id == state_id)
         if country_id:
             query = query.where(State.country_id == country_id)
-    return [serialize(row) for row in await db.scalars(query.order_by(Facility.id).offset(offset).limit(limit))]
+    from app.services.location_context import attach_location_context
+    rows=[serialize(row) for row in await db.scalars(query.order_by(Facility.id).offset(offset).limit(limit))]
+    return await attach_location_context(db,rows)
 
 
 async def nearby(db, user, latitude, longitude, radius_km, limit):

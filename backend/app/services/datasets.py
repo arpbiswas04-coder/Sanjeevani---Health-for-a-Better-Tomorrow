@@ -14,7 +14,9 @@ async def get_medicine_training_data(db,user,facility_id,medicine_id,start_date,
     day=func.date(func.timezone('UTC',StockTransaction.created_at)) if db.bind.dialect.name=='postgresql' else func.date(StockTransaction.created_at)
     query=select(day.label('day'),(-func.sum(StockTransaction.quantity)).label('consumed')).join(Inventory).join(MedicineBatch).where(
         Inventory.facility_id==facility_id,MedicineBatch.medicine_id==medicine_id,StockTransaction.kind=='issue',
-        day>=str(start_date),day<=str(end_date)).group_by(day).order_by(day).offset(offset).limit(limit)
+        # Bind actual DATE values. Stringifying produces VARCHAR parameters that
+        # PostgreSQL cannot compare with date(timezone(...)); SQLite masked this.
+        day>=start_date,day<=end_date).group_by(day).order_by(day).offset(offset).limit(limit)
     return [{'day':str(d),'consumed':q} for d,q in await db.execute(query)]
 
 

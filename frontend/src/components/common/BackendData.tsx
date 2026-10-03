@@ -3,11 +3,13 @@ import { Card } from '@/components/ui/Card';
 import { ApiError } from '@/services/httpClient';
 import { QueryParams } from '@/services/dataApi';
 import { useBackendData } from '@/hooks/useBackendData';
+import { useAuthStore } from '@/store/authStore';
 
 export const controlClass = 'bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-200';
 export const buttonClass = 'px-3 py-2 rounded-xl bg-slate-800 text-slate-200 text-xs disabled:opacity-40 hover:bg-slate-700';
 export function PageHeading({ title, description }: { title: string; description: string }) {
-  return <header><h2 className="text-2xl font-bold tracking-tight text-slate-100">{title}</h2><p className="text-xs text-slate-400 mt-1">{description}</p></header>;
+  const developmentAccount = useAuthStore(s => s.user?.name.startsWith('dev-data-'));
+  return <header><h2 className="text-2xl font-bold tracking-tight text-slate-100">{title}</h2><p className="text-xs text-slate-400 mt-1">{description}</p>{(import.meta.env.DEV || developmentAccount) && <p className="text-xs text-amber-300 mt-2">Development environment: operational records may include labeled synthetic fixtures. These are not verified real-world observations.</p>}</header>;
 }
 export function Unavailable({ children }: { children: ReactNode }) {
   return <p className="text-xs text-slate-400 p-4 border border-dashed border-slate-700 rounded-xl">Unavailable: {children}</p>;

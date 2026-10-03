@@ -338,3 +338,63 @@ unknown units, missing facility hierarchy/coordinates, no full-volume PostgreSQL
 benchmark, unavailable TimescaleDB verification, and ordinary OSM availability.
 No clinical use or deployment readiness is implied. The bounded development
 implementation is ready for review; nothing has been committed or pushed.
+
+### Functional completion enrichment (2026-10-03)
+
+See [FUNCTIONAL_COMPLETION_AUDIT.md](FUNCTIONAL_COMPLETION_AUDIT.md) for the complete
+route/role audit and final verification. With `backend/.venv` active, from `backend`:
+
+```powershell
+python -m scripts.development_data enrich --seed 20261003
+python -m scripts.verify_functional_completion --api http://127.0.0.1:8001
+```
+
+Enrichment requires the existing owned development seed receipt; it does not import
+the catalogues again. The same seed is idempotent. It only permits the local
+`sanjeevani_dev` database in development mode. Verification reads the existing ignored
+`tmp/development-data/credentials.json`; never copy credentials into tracked files.
+Use a verification API on port 8001 when 8000 is already occupied, and set the Vite
+process's `VITE_BACKEND_URL` to that same origin. Do not overwrite existing `.env` files.
+
+The bounded enrichment adds 23 attributed approximate city references, not hospital
+coordinates. There are 24 plottable facilities and 34 unlocated facilities; all 50
+source-imported facilities still have null exact coordinates. Approximate references
+do not affect nearby searches, jurisdiction, weather requirements or authorization.
+Synthetic ambulance, maintenance, procurement/shipment and cold-chain records are
+explicitly development fixtures, not real observations.
+
+From `frontend`, with the verification API running and SQL facts freshly verified:
+
+```powershell
+$env:VITE_BACKEND_URL='http://127.0.0.1:8001'
+$env:FUNCTIONAL_LIVE_TEST='1'
+npm test -- src/test/functionalLive.integration.test.tsx
+Remove-Item Env:FUNCTIONAL_LIVE_TEST
+npm test
+npm run build
+```
+
+Use supported Node 24.15.0 or compatible Node 24. These are rendered React with real
+HTTP checks; they are not browser visual acceptance tests. Full backend tests use
+the disposable verification database settings in ignored `.env.local`, never the
+persistent development database as a destructive test target.
+
+### Manual role testing
+
+See [DEVELOPMENT_ACCOUNT_MATRIX.md](DEVELOPMENT_ACCOUNT_MATRIX.md) for every actual
+role, login, scope, permission set, expected navigation and unsupported regional alias.
+The existing four `dev-data-*` accounts cover all four provisioned backend roles;
+no duplicate accounts or invented national/state/district policies are needed.
+
+With `backend/.venv` active, from `backend`, validate/reuse the local matrix:
+
+```powershell
+python -m scripts.development_data accounts --seed 20261003 --credentials-file ../tmp/development-data/credentials.json
+```
+
+For fresh accounts a privately supplied `SANJEEVANI_DEV_TEST_PASSWORD` is supported.
+Password: value of `SANJEEVANI_DEV_TEST_PASSWORD` when configured, otherwise the
+per-account value in the explicit private credentials file. The command refuses
+password conflicts and never resets existing accounts. Do not commit secret values.
+In this local environment existing per-account passwords remain in the ignored file;
+there is no configured shared password. The `arpan` administrator is unchanged.
