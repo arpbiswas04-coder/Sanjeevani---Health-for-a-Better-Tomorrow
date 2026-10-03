@@ -53,7 +53,9 @@ async def nearby(latitude: float = Query(ge=-90, le=90), longitude: float = Quer
 @router.get('/facilities/{identifier}', response_model=out.Success[out.FacilityView], response_model_exclude_unset=True)
 async def facility(identifier: UUID, db: AsyncSession = Depends(get_db, scope="function"), user: User = Depends(require('inventory.read'))):
     await check_facility(db, user, identifier)
-    return {'success': True, 'data': serialize(await get_record(db, Facility, identifier))}
+    from app.services.location_context import attach_location_context
+    rows=await attach_location_context(db,[serialize(await get_record(db, Facility, identifier))])
+    return {'success': True, 'data': rows[0]}
 
 
 @router.patch('/facilities/{identifier}', response_model=out.Success[out.FacilityView], response_model_exclude_unset=True)

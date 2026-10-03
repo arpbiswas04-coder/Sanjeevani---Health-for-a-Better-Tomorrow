@@ -45,6 +45,12 @@ function mockLogin(user = profile) {
 }
 
 describe('backend authentication contract', () => {
+  it('offers only provisioned portal categories, with backend-authoritative access', () => {
+    render(<MemoryRouter><LoginPage /></MemoryRouter>);
+    const selector = screen.getByLabelText('Role') as HTMLSelectElement;
+    expect(Array.from(selector.options).map(option => option.value)).toEqual(['', 'SUPER_ADMIN', 'FACILITY_ADMIN']);
+    expect(screen.getByText(/National, state and district portals have no provisioned role profiles/)).toBeInTheDocument();
+  });
   it.each(['dev_data_operator', 'dev_data_inventory', 'dev_data_reader'])('maps %s without inventing grants', async role => {
     mockLogin({ ...profile, roles: [role], permissions: ['inventory.read'], scope_mode: 'restricted', facility_ids: ['source-facility'] });
     const identity = await authService.login(credentials);

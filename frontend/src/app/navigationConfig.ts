@@ -39,6 +39,17 @@ export interface NavSectionConfig {
 export const NAVIGATION_BY_ROLE: Record<Role, NavSectionConfig[]> = {
   SUPER_ADMIN: [
     {
+      title: 'Operational Data',
+      items: [
+        { name: 'Resource Map', path: '/map', icon: Map },
+        { name: 'Inventory', path: '/inventory', icon: Package },
+        { name: 'Supply Chain', path: '/warehouses', icon: Truck },
+        { name: 'Workforce', path: '/workforce', icon: Users },
+        { name: 'Operational Alerts', path: '/alerts', icon: AlertTriangle },
+        { name: 'Reports & Analytics', path: '/analytics', icon: BarChart3 },
+      ],
+    },
+    {
       title: 'System Management',
       items: [
         { name: 'Admin Dashboard', path: '/admin/dashboard', icon: LayoutDashboard },
@@ -163,6 +174,15 @@ export const NAVIGATION_BY_ROLE: Record<Role, NavSectionConfig[]> = {
   ],
 
   FACILITY_ADMIN: [
+    {
+      title: 'Shared Operational Tools',
+      items: [
+        { name: 'Facility Directory', path: '/facilities', icon: Building2 },
+        { name: 'Resource Map', path: '/map', icon: Map },
+        { name: 'Supply Chain', path: '/warehouses', icon: Truck },
+        { name: 'Reports & Analytics', path: '/analytics', icon: BarChart3 },
+      ],
+    },
     {
       title: 'Facility Operations',
       items: [

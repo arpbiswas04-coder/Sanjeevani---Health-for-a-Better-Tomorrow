@@ -83,6 +83,21 @@ async def test_postgis_distance(pg):
         assert index=='ix_facilities_geography'
 
 
+async def test_postgres_consumption_date_bounds(pg):
+    from app.services.datasets import get_medicine_training_data
+    factory,user,facility,medicine=pg
+    today=datetime.now(timezone.utc).date()
+    async with factory.begin() as db:
+        await receive(db,Receive(facility_id=facility.id,medicine_id=medicine.id,batch_number='CONSUMPTION',
+            expires_on=today+timedelta(days=30),quantity=10,reference='test'),user)
+        await issue(db,Issue(facility_id=facility.id,medicine_id=medicine.id,quantity=3,reference='test'),user)
+        # UTC day grouping must work even when the DB session has another timezone.
+        await db.execute(text("SET LOCAL TIME ZONE 'Pacific/Honolulu'"))
+        rows=await get_medicine_training_data(db,user,facility.id,medicine.id,today,today)
+        assert rows==[{'day':str(today),'consumed':3}]
+        assert await get_medicine_training_data(db,user,facility.id,medicine.id,today-timedelta(days=1),today-timedelta(days=1))==[]
+
+
 async def test_postgres_ledger_cannot_be_rewritten(pg):
     factory,user,facility,medicine=pg
     async with factory.begin() as db:
